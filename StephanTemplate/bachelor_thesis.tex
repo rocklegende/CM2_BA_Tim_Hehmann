@@ -1,0 +1,151 @@
+\documentclass[a4paper, DIV12, 2.5headlines, bigheadings, titlepage, openbib]{scrartcl}
+
+\usepackage[ngerman, english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage[utf8x]{inputenc}
+\usepackage{mathpazo}
+\usepackage{helvet}
+\usepackage{courier}
+\usepackage{eurosym}
+\usepackage{amsmath}
+\usepackage{courier}
+\usepackage{scrpage2}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{multirow}
+\usepackage{varioref}
+\usepackage{babelbib}
+\usepackage{makeidx}
+\usepackage{tabularx}
+\usepackage{floatflt}
+\usepackage{float}
+\usepackage{lipsum}
+\usepackage{xargs}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{wrapfig}
+\usepackage[colorinlistoftodos,prependcaption,textsize=tiny]{todonotes}
+\usepackage[pdftex, colorlinks, linktocpage, linkcolor=black, citecolor=black, urlcolor=black]{hyperref}
+\usepackage[linesnumbered]{algorithm2e}
+
+\pagestyle{scrheadings}
+
+\geometry{a4paper, top=55mm, left=40mm, right=35mm, bottom=40mm, headsep=10mm, footskip=22mm}
+\linespread {1.25}
+
+\newcommand{\hpitype}{Bachelor's Thesis}
+\newcommand{\hpiauthor}{Tim Hehmann}
+\newcommand{\hpititle}{Design and Implementation of an Interactive Floorplan for an Access Management System}
+\newcommand{\hpititleother}{Design und Implementierung eines interaktiven Gebäudeplans für ein Zugangskontrollsystem} % <= das Studienreferat verlangt einen deutschen UND englischen Titel
+\newcommand{\hpisupervisor}{Prof.\,Dr.\,Christoph Meinel, Eric Klieme, Christian Tietz}
+\newcommand{\hpichair}{Fachgebiet für Internet-Technologien und Systeme}
+\newcommand{\hpiexternalsupervisor}{Philipp Berger, Stephan Schultz, Uwe Leppler}
+\newcommand{\hpiexternal}{neXenio GmbH}
+\newcommand{\hpidate}{\today}
+
+\input{utils/codecolors}
+\input{utils/hpicolors}
+\input{utils/commands}
+\input{utils/environments}
+
+\lstdefinestyle{javastyle}{
+    language=Java,
+    backgroundcolor=\color{code_background},
+    commentstyle=\color{code_comments},
+    keywordstyle=\color{code_keywords},
+    numberstyle=\tiny\color{code_numbers},
+    stringstyle=\color{code_strings},
+    identifierstyle=\color{code_identifiers},
+    basicstyle=\scriptsize,
+    aboveskip=5mm,
+    belowskip=5mm,
+    xleftmargin=0mm,
+    xrightmargin=-20mm,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=10pt,
+    frameround=ftff,
+    frame=single,
+    rulecolor=\color{code_frame},
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+\lstset{style=javastyle}
+\lstMakeShortInline[
+	columns=fixed,
+	basicstyle=\ttfamily
+]|
+
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{0.25cm}
+
+\begin{document}
+
+	%%% Headers & Footers
+	\selectlanguage{english}
+	\automark{section}
+	\ohead{\includegraphics[height=1.3cm,clip,viewport={0 60 250 180}]{utils/hpi_logo.pdf}}
+	\chead{}
+	\ihead{\headmark}
+	\setheadsepline{1.0pt}[\color{hpigrey}]
+	
+	
+
+	%%% Title page
+	\hypersetup{%
+		pdftitle	= {\hpititle},
+		pdfsubject	= {Bachelor Thesis},
+		pdfauthor	= {\hpiauthor},
+		pdfcreator	= {PDFLaTeX},
+		pdfproducer	= {LaTeX with hyperref and thumbpdf}
+	}
+	
+	\input{titlepage_english}
+	
+	%%% Disclaimer
+	\input{disclaimer.tex}
+	
+	%%% Abstract
+	\input{content/abstract.tex}
+
+	%%% TOC
+	\tableofcontents
+	\clearpage
+
+	\mainmatter
+	%% Content
+	\input{content/introduction.tex}
+	\input{content/relatedWork.tex}
+	\input{content/concept.tex}
+	\input{content/implementation.tex}
+	%\input{content/evaluation.tex}
+	%\input{content/futureWorks.tex}
+	%\input{content/conclusion.tex}
+	
+	%%% Bibliography
+	%\bibliographystyle{babunsrt3-fl}
+	\addcontentsline{toc}{section}{Bibliography}
+	\bibliographystyle{babunsrt-fl}
+	\bibliography{projektbib}
+	\clearpage
+	
+	%%%% Appendix
+	%\input{content/appendix.tex}
+	
+	%%% TODOs
+	%\todo[inline]{The original todo note withouth changed colours.\newline Here's another line.}
+	%\lipsum[1]\unsure{Is this correct?}\unsure{I'm unsure about also!}
+	%\lipsum[1]\change{Transate abstract}
+	%\lipsum[1]\info{This can help me in chapter seven!}
+	%\lipsum[1]\improvement{This really needs to be improved!\newline\newline What was I thinking?!}
+	%\thiswillnotshow{This is hidden since option `disable' is chosen!}
+	%\improvement[inline]{The following section needs to be rewritten!}
+	%\listoftodos[Notes]
+	
+\end{document}
