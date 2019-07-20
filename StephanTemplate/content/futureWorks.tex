@@ -12,7 +12,7 @@ This also leads to another usability issue: the manual positioning of the gates.
 
 The next improvement would be the option for the facility manager to set the maximum limit of persons in a room themselves or define a person per squaremeter limit (which would require to know or calculate the  squaremeters of each room). Currently this maximum value is hardcoded and therefore is the same for large and small rooms.
 
-Every time an event happens, a request is send to the backend for the updated number of people that are behind the gate where the event occured. This results in a lot of traffic at each notification about an event. By only requesting the number of people for each gate at startup and the client updating the occupancy state by itself (simply adding to or subtracting from the  amount of people in the room) this traffic could be reduced and improve the performance of the floorplan. 
+Every time an event happens, a request is send to the backend for the updated number of people that are behind the gate where the event occured. This results in a lot of traffic at each notification about an event. By only requesting the number of people for each gate at startup and the client updating the occupancy state by itself (simply adding to or subtracting from the amount of people in the room), this traffic could be reduced and improve the performance of the floorplan. 
 
 Some of the work presented in the Related Work chapter include the option to review and replay events from the past. This could also be useful for our use case. Through this option the facility manager could view how the heatmap developed over time and also replay missed events, giving them insights about which time intervals and areas are critical for the safety of the employees.
 
