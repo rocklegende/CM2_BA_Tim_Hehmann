@@ -1,5 +1,5 @@
 \section{Implementation}
-As this was part of our access management platform we implemented this floorplan also in our web application.
+As this was part of our access management platform we implemented this floorplan also in a web application.
 
 \begin{figure}[!hb]
 	\centering
@@ -42,7 +42,7 @@ Because it has a lot of features already bundled together, it offers far more fu
 
 This also results in a heavyweight module. With a minified bundle size of 330.1 kB (Version 5.3.3) it takes up to 1.6 seconds to download on 3G\footnote{\url{https://bundlephobia.com/result?p=ol@5.3.3}}. Although this can be lowered for production by deleting unused modules, it takes extra effort to see which modules are really not used.
 
-Due to the limited time we had for the implementation of the floorplan (due to it being the last feature on our roadmap) and only beginner knowledge of JavaScript, we needed something that is easy to understand and lets beginners output something useful in a short time. Because the abstraction layer of OpenLayers  is quite low, the learning curve can be pretty steap. Compared to Leaflet it takes a lot more code to get the same results.
+%Due to the limited time we had for the implementation of the floorplan (due to it being the last feature on our roadmap) and only beginner knowledge of JavaScript, we needed something that is easy to understand and lets beginners output something useful in a short time. Because the abstraction layer of OpenLayers  is quite low, the learning curve can be pretty steap. Compared to Leaflet it takes a lot more code to get the same results.
 
 Therefore we thought that OpenLayers doesn't fit our task.
 
@@ -64,6 +64,9 @@ Different Geometries can be represented in a GeoJSON file. These include for exa
 
 This can be used to encode the geometry for countries, houses and streets on a map, but also for encoding data for indoor rooms, stairs and hallways.
 
+\subsubsection{Summary}
+We chose leaflet because of this blablabla
+
 
 \subsection{Display of indoor features}
 \label{Display of indoor features}
@@ -73,22 +76,28 @@ The indoor map plugin extends Leaflet by an |Indoor| class, which is able to loa
 \begin{lstlisting}[label=setupMap]
 ...
 this.map = L.map('floorplan-container', {
-            center: new L.LatLng(49.41873, 8.67689),
-            zoom: 20,
-        });
+	center: new L.LatLng(49.41873, 8.67689),
+	zoom: 20,
+});
 
-        const indoorLayer = new L.Indoor(this.props.geoJSON, {
-        ...
+const indoorLayer = new L.Indoor(this.props.geoJSON, {
+...
 \end{lstlisting}
 
 This renders the GeoJSON data on a map with a HTML layer for each feature.
 
-\emph{TODO: latitude, longitude erklaeren}
+\begin{itemize}
+\item Warum wird lat lng benoetigt?
+
+\item Wie wird center rausgefunden vlt noch spannend
+
+\item Hier erwaehnen das jedes feature eine ID benoetigt und so.
+\end{itemize}
 
 %Considering the limited time we had for the implementation, we decided that Leaflet fits our needs the best and could be the fastest way to build our interactive live floorplan.
 
 
-Hier erwaehnen das jedes feature eine ID benoetigt und so.
+
 
 \subsection{Interactive Floorplan}
 \label{Interactive Floorplan}
@@ -108,9 +117,11 @@ To create this connection between the room and the marker, each feature/room in 
 
 After setting the marker it needs to be linked with a gate. This is done by a selection input.
 
-\emph{Bild rein von selection}
+\emph{\textbf Bild von selection}
 
-
+\begin{itemize}
+\item Panning und zooming bietet leaflet schon von hause aus
+\end{itemize}
 
 \subsection{Logging of Gate Events}
 \label{Logging of Gate Events}
@@ -130,7 +141,7 @@ In our project logs sent from the gates need to be analyzed and visualized to gi
 
 Since we're working with own custom visualization, we will ignore Kibana for our implementation. And since we're only receiving events  from one source - the gates, we can skip the Logstash pipeline and send event data directly to the Elasticsearch server, which then will be stored in a database and indexed.
 
-Since data of any form can be sent to the Elasticsearch server, it performs an automatic type detection for each property that is sent. This can result in wrong datatypes, causing the server to reject future events because they're not fulfilling the required datatypes\footnote{For example: The first event has a member id with the value "1234", then Elasticsearch will automatically cast it to an Integer. If the following event now has an id of "fe123d" Elastic will not accept the event.} To prevent this, we first have to create a template for our gate event objects, which strictly declares the datatypes for each property in the event object:
+Since data of any form can be sent to the Elasticsearch server, it performs an automatic type detection for each property that is sent. This can result in wrong datatypes, causing the server to reject future events because they're not fulfilling the required datatypes\footnote{For example: The first event has a member \emph{id} with the value "1234". The Elasticsearch server will automatically interpret this value as an Integer and set is as required datatype. If the following event now has an id of "fe123d" the server will not accept this event.}. To prevent this, we first have to create a template for our gate event objects, which strictly declares the datatypes for each property in the event object:
 
 \begin{lstlisting}[label=curlScriptTemplateElastic]
 curl -v -X PUT 'localhost:9200/_template/gates' -H 'Content-Type: application/json' -d '
@@ -154,6 +165,8 @@ curl -v -X PUT 'localhost:9200/_template/gates' -H 'Content-Type: application/js
   }
 }'
 \end{lstlisting}
+
+\emph{was ist unterschied zwischen integer und keyword, warum ist die suche dadurch besser?}
 
 To enable the fast search mechanism we then have to create the index for the gate:
 
@@ -230,7 +243,7 @@ function handleSockets(server) {
 }
 \end{lstlisting}
 
-To ensure that we only send data to clients that are authenticated, we need to verify the token that is sent with each packet. This is done by installing a middleware on to our Socket.IO Server that includes a function that gets executed for every packet that is sent. This function verifies that the token sent is a valid Keycloak Access Token.
+To ensure that we only send data to clients that are authenticated, we need to verify the token that is sent with each packet. This is done by installing a middleware on to our Socket.IO server that includes a function that gets executed for every packet that is sent. This function verifies that the token sent is a valid access token.
 
 \begin{lstlisting}[label=createSocketIOMiddleware]
     io.use((socket, next) => {
@@ -242,7 +255,7 @@ To ensure that we only send data to clients that are authenticated, we need to v
     });
 \end{lstlisting}
 
-Everytime a frontend client now connects to the server, the server extracts the userId from the token that was sent by the client. We then create a \emph{Room}\cite{socketio:rooms} - a seperated communication channel - with this userId, so that we can emit notifications only to that specific user. If the logged in user is also an admin, he gets added to an admin room, where all other admins that connected are also inside.
+Everytime a frontend client now connects to the server, the server extracts the userId from the token that was sent by the client. We then create a \emph{Room}\cite{socketio:rooms} - a seperated communication channel - with this userId, so that we can emit notifications only to that specific user. If the logged in user is also an admin, he gets added to an admin room, a room where all other admins that are connected are also inside.
 
 \begin{lstlisting}[label=onConnection]
 io.on('connection', (socket) => {
@@ -266,7 +279,7 @@ module.exports.emitMessage = (user, emitType, message) => {
     };
 \end{lstlisting}
 
-This method now gets called everytime the gates send an event through our backend interface that we presented earlier. We use the room 'admin' to notify all admins at the same time.
+This method gets called everytime the gates send an event through our backend interface that we presented earlier. We use the room 'admin' to notify all admins at the same time.
 
 \begin{lstlisting}[label=socketIOBackendNotification]
 function notifyAboutEvent(data) {
@@ -322,8 +335,7 @@ gateEventHappened = (event) => {
     };
 \end{lstlisting}
 
-To calculate the number of people we use an endpoint in our backend.
-This endpoint looks at the datetime of the office opening at the day the request to the endpoint is made. At this time we expect that no people are inside the office. It then counts all entries and exits at the gate with the given id that were successful and after the office opening. By subtracting the exits from the entries we get the number of people that are behind this gate.
+To calculate the number of people we use an endpoint in our backend that looks at the datetime of the office opening at the day the request to the endpoint is made. At this time we expect that no people are inside the office. It then counts all entries and exits at the gate with the given id that were successful and after the office opening. By subtracting the exits from the entries we get the number of people that are behind this gate.
 
 This result is then the input for colorizing the room:
 
@@ -341,7 +353,7 @@ This result is then the input for colorizing the room:
 
 Because we can only work with events from the gates and no indoor-positioning technology, we're unable to locate the exact position of single device. Therefore we colorize the entire room evenly.
 
-To represent the occupancy of a room we use colors on a scale from green to red, with green representing a room with no people inside and with red a room that hit its maximum capacity. 
+We follow the To represent the occupancy of a room we use colors on a scale from green to red, with green representing a room with no people inside and with red a room that hit its maximum capacity. 
 
 \begin{lstlisting}[label=getColorForOccupancyRate]
     getColorForOccupancyRate = (rate) => {
@@ -356,7 +368,7 @@ To represent the occupancy of a room we use colors on a scale from green to red,
 
 \subsubsection{Access Decision Information}
 
-More information about the access decisions get also displayed in real-time in a table (\emph{Activity Monitor}) below the interactive floorplan (Figure 3).
+More information about the access decisions get also displayed in real-time in a table (\emph{Activity Monitor}) below the interactive floorplan (Figure X).
 
 Because the gates transmit the deviceId in the event object, the relationship to the owner of the device can be made:
 
@@ -409,10 +421,5 @@ function notifyAdminOnAlarm(alarmEvent) {
         });
 }
 \end{lstlisting}
-
-\subsection{Persisting Data}
-\label{Persisting Data}
-
-MySQL Database, Sequelize, Endpunkte fuer marker zeigen (speichern gateId, lat, lng, roomId)
 
 \clearpage
