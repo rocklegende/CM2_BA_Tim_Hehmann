@@ -8,9 +8,9 @@ But not only office buildings, also gyms, public transportation services and uni
 \subsection{Context of the project}
 \label{Context of the project}
 
-The bachelors project from 2016 'Passwords Are Obsolete - User Authentication Using Wearables And Mobile Devices' tried to solve this problem and came up with \emph{BAuth}\footnote{\url{https://play.google.com/store/apps/details?id=com.nexenio.behaviourauthentication&hl=de}} (short for Behavioural Authentication), an app that makes it possible to authenticate the user solely on his behaviour. This is done by continously analysing the sensor data from smartphone/-watch and calculating a \emph{trustlevel}, a value that determines how certain it is, that the device is in possession of the correct owner.
+The bachelors project from 2016 'Passwords Are Obsolete - User Authentication Using Wearables And Mobile Devices' tried to solve this problem and came up with \emph{BAuth}\footnote{\url{https://play.google.com/store/apps/details?id=com.nexenio.behaviourauthentication&hl=de}}, an app that makes it possible to authenticate the user solely on his behaviour. This is done by continously analysing the sensor data from smartphone/-watch and calculating a \emph{trustlevel}, a value that determines how certain it is, that the device is in possession of the correct owner.
 
-The communication between the gates and the smartphone (with BAuth installed) is already possible via Bluetooth. But the management of the access rights of each employee for each single gate is currently done by hardcoding a list of allowed employee directly on to the hardware inside the gates. Although there are a lot of access management systems out there that provide automation for the management of access rights, none of them fits the needs for the app of our predecessors. Addiotionally these systems are all closed source and cannot be extended to also work for this use case. 
+Besides that, the smartphone (with BAuth installed) is also already able to communicate with the gates via Bluetooth. But the management of the access rights of each employee for each single gate is currently done by hardcoding a list of allowed employee directly on to the hardware inside the gates. Although there are a lot of access management systems out there that provide automation for the management of access rights, none of them fits the needs for the app of our predecessors. Addiotionally these systems are all closed source and cannot be extended to also work for this use case. 
 
 %This new way of authenticating solves the management issue of cards and passwords by authenticating directly with the device. It also lowers the security risk in an event of a theft, because reading a \emph{wrong} behaviour just for a few meters results in a significant drop in trustlevel, thus denying access almost immediately.
 
@@ -21,7 +21,7 @@ With this solution, BAuth could be used in a real world scenario.
 \subsection{Context of this thesis}
 \label{Context of this thesis}
 
-\emph{TODO: erklaeren was interactive genau heisst, Nachteile von Behavioral Auth (z.B. wenn Schuh sich aendert, oder generell verhalten, kommt man nicht mehr rein und so}
+%TODO: erklaeren was interactive genau heisst, Nachteile von Behavioral Auth (z.B. wenn Schuh sich aendert, oder generell verhalten, kommt man nicht mehr rein und so
 
 The management of an office building with multiple floors and multiple gates can be a challenging task for the facility management team. To prevent loosing the overview of the facility, the usage of an interactive floorplan can be helpful. The implementation of such a plan was also part of our projects scope and forms also the main topic of this thesis.
 
@@ -30,18 +30,20 @@ In our access management system this graphical plan gives insight about the diff
 This information could be used by the facility management team to see how heavily the gates are used, where a possible security threat exists and also if a room is currently at risk of not being evacuated safely. 
 In general it improves the overall view of the facility and could lead to a faster use of our other access management tools.
 
-This bachelor thesis will showcase an approach for the  design and implementation of such a floorplan. To accomplish this it will be guided by the following structure:
+This bachelor thesis will showcase an approach for the design and implementation of such a floorplan. To accomplish this it will be guided by the following structure:
 
-In the second chapter, related work gets discussed. This will showcase different solutions from software companies that already offer services for similar requirements.
+In the second chapter, we will present the requirements that we received for the implementation of the interactive floorplan and what external input we have at disposal.
 
-The third chapter describes our chosen approach and the architecture and components behind it.
+In the third chapter, related work gets discussed. This will showcase different solutions from software companies that already offer services for similar requirements.
 
-In the fourth chapter we will present our implementation for an interactive floorplan. This will present the solutions used to fulfill the requirements explained in the Background chapter.
+The fourth chapter describes our chosen approach and the architecture and components behind it.
 
-The topic of the fifth chapter is evaluation. In this chapter the performance of the floorplan for different scenarios gets analysed. Furthermore it will discuss the protection of data privacy in a floorplan, especially focussing on the personal informations that get shown in the floorplan.
+In the fifth chapter we will present our implementation for an interactive floorplan. This will present the solutions used to fulfill the requirements explained in the Background chapter.
 
-The sixth chapter will present what further features could be implemented in the future and what needs to be done before actually deploying it into production. 
+The topic of the sixth chapter is evaluation. In this chapter the performance of the floorplan for different scenarios gets analysed. Furthermore it will discuss the protection of data privacy in a floorplan, especially focussing on the personal informations that get shown in the floorplan.
 
-The seventh and last chapter will wrap the thesis up.
+The seventh chapter will present what further features could be implemented in the future and what needs to be done before actually deploying it into production. 
+
+The eigth and last chapter will wrap the thesis up.
 
 \clearpage

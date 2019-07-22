@@ -1,12 +1,16 @@
 \section{Background}
 
-The following features were required for the floorplan:
+\subsection{External Input}
+
+Multiple gates can be installed inside an office. We receive data about the access decisions made at these gates. We also get geospatial data for each indoor feature inside the office.
+
+\subsection{Requirements}
 
 \begin{itemize}
 	\item \textbf{Interaction}:
 	The floorplan should be an interactive map. This means that the user is able to interact with the map by zooming, panning and clicking, thereby altering the state and look of the map. This includes the possibility to set markers at a specific location on the map, which then can be linked with gates. A click on a marker then shows information about that specific gate.
 	\item \textbf{Real-time Data Visualization}:
-	The only external data we receive for calculating the number of people in each room are the access decisions made at the gate. These events should be displayed in real-time on the map. This includes information about the access, which enables to quickly view who entered at what gate at what time.
+	 The events from the gates should be displayed in real-time on the map. This includes information about the access, which enables to quickly view who entered at what gate at what time.
 	\item \textbf{Eventlogging}:
 	There needs to be an interface for the gates to send these events to. These need to be persisted as logs for later analytics.
 	\item \textbf{Heatmap}:

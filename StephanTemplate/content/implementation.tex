@@ -1,5 +1,5 @@
 \section{Implementation}
-As this was part of our access management platform we implemented this floorplan also in a web application.
+As this was part of our access management platform we implemented this floorplan also as a web application.
 
 \begin{figure}[!hb]
 	\centering
@@ -17,7 +17,7 @@ In March 2011, Google introduced the first indoor floorplans in their map. The i
 Users can upload own floorplans (valid formats include for example PNG, PDF or JPEG) to the map, with restriction to only publicly available areas.
 
 Google Maps also offers a very popular API for their services. This allows the integration of the Google Maps Services in your own website. The usage is free for commercial use up until 28000 calls per day\footnote{According to \url{https://cloud.google.com/maps-platform/pricing/sheet/?hl=de}} and requires an API key.
-The Maps JavaScript API comes with direct support for importing GeoJSON and can be customized with own content. Its designed to load maps quickly and is optimized for mobile use. Aside from that it also offers a versatile visualization library, which also includes a Heatmap Layer that helps with visualizing a heatmap (Figure 2.1.).
+The Maps JavaScript API comes with direct support for importing GeoJSON and can be customized with own content. Its designed to load maps quickly and is optimized for mobile use. Aside from that it also offers a versatile visualization library, which also includes a Heatmap Layer that helps with visualizing a heatmap (Figure 5).
 
 \begin{figure}[!hb]
 	\centering
@@ -26,25 +26,13 @@ The Maps JavaScript API comes with direct support for importing GeoJSON and can 
 	\label{fig:GoogleMapsHeatmap}
 \end{figure}
 
-Although this looks very promising for creating our indoor floorplan, there are quite a few problems for us.
-
-Because the API needs an internet connection, offline development is not possible. 
-Furthermore the Google Maps API would request payment after hitting the threshold of API calls mentioned above and therefore needs to be linked to an account where billing is activated. Although hitting this threshold could only happen in production, our project partner set the requirement to only use free and also open-source software and linking a billing account of our partner to use the API was not possible. 
-
-Therefore Google Maps was not applicable to our task of creating an interactive floorplan.
-
 \subsubsection{OpenLayers}
 \label{OpenLayers}
 
 OpenLayers is an open-source JavaScript library for displaying interactive maps. Out of the box it comes with various features like map rotation, direct mobile support and import of GeoJSON, TopoJSON, KML\footnote{Keyhole Markup Language} or GML\footnote{Geography Markup Language} data \footnote{\url{https://openlayers.org/}}. Unlike Google Maps, OpenLayers is a pure client-side library with no server-side dependencies. 
 
-Because it has a lot of features already bundled together, it offers far more functionality than we need to meet the requirements of our floorplan. 
-
-This also results in a heavyweight module. With a minified bundle size of 330.1 kB (Version 5.3.3) it takes up to 1.6 seconds to download on 3G\footnote{\url{https://bundlephobia.com/result?p=ol@5.3.3}}. Although this can be lowered for production by deleting unused modules, it takes extra effort to see which modules are really not used.
 
 %Due to the limited time we had for the implementation of the floorplan (due to it being the last feature on our roadmap) and only beginner knowledge of JavaScript, we needed something that is easy to understand and lets beginners output something useful in a short time. Because the abstraction layer of OpenLayers  is quite low, the learning curve can be pretty steap. Compared to Leaflet it takes a lot more code to get the same results.
-
-Therefore we thought that OpenLayers doesn't fit our task.
 
 \subsubsection{Leaflet}
 \label{Leaflet}
@@ -53,20 +41,27 @@ Leaflet is another open-source JavaScript library for creating interactive maps.
 
 By only including core features for map visualization, it only has a bundled size of 138.6KB\footnote{\url{https://bundlephobia.com/result?p=leaflet@1.5.1}}, making it a very lightweight library.
 
-Furthermore Leaflet supports every browser and can easily be extended by plugins from the community.
+Furthermore Leaflet supports every browser and can easily be extended by plugins from the community or own plugins.
 This also includes plugins for creating indoor maps \cite{baines_provides_2019} and real-time maps with Socket.IO.
 
 \subsubsection{GeoJSON}
 \label{GeoJSON}
 
 GeoJSON is a format for interchanging geospatial data and is based on JavaScript Object Notation. With the publishing of RFC 7946 in August 2016 it has a standardized format specification.
-Different Geometries can be represented in a GeoJSON file. These include for example Lines, Linestrings, Polygones or Multipolygones\footnote{\url{https://tools.ietf.org/html/rfc7946}}. 
+Different geometries can be represented in a GeoJSON file. These include for example Lines, Linestrings, Polygones or Multipolygones\footnote{\url{https://tools.ietf.org/html/rfc7946}}. 
 
 This can be used to encode the geometry for countries, houses and streets on a map, but also for encoding data for indoor rooms, stairs and hallways.
 
 \subsubsection{Summary}
-We chose leaflet because of this blablabla
 
+%Google Maps
+Although Google Maps looks very promising for creating our indoor floorplan, there are quite a few problems for us: Because the API needs an internet connection, offline development is not possible. 
+Furthermore the Google Maps API would request payment after hitting the threshold of API calls mentioned above and therefore needs to be linked to an account where billing is activated. Although hitting this threshold could only happen in production, our project partner set the requirement to only use free and also open-source software and linking a billing account of our partner to use the API was not possible. 
+
+OpenLayers wins here over Google Maps because of the open-source codebase. Additionaly it provides a lot of features for interactive maps out of the box.
+But because it has a lot of features already bundled together, it offers far more functionality than we need to meet the requirements of our floorplan. This also results in a heavyweight module. With a minified bundle size of 330.1 kB (Version 5.3.3) it takes up to 1.6 seconds to download on 3G\footnote{\url{https://bundlephobia.com/result?p=ol@5.3.3}}. Although this can be lowered for production by deleting unused modules, it takes extra effort to see which modules are really not used.
+
+All in all, we decided to build our interactive map with the Leaflet library, because of it leightweightness and the possibility to easily extend existing classes, which is useful for configuring the interactive floorplan exactly for our needs. Besides that we will also use GeoJSON as the format for the external input of the geometric data of each room in the office. We base this decision on the fact that GeoJSON is a widely used and standardized format for encoding geospatial data.
 
 \subsection{Display of indoor features}
 \label{Display of indoor features}
@@ -75,6 +70,7 @@ The indoor map plugin extends Leaflet by an |Indoor| class, which is able to loa
 
 \begin{lstlisting}[label=setupMap]
 ...
+// leaflet map gets rendered inside a div that has the id of the first parameter
 this.map = L.map('floorplan-container', {
 	center: new L.LatLng(49.41873, 8.67689),
 	zoom: 20,
@@ -84,19 +80,18 @@ const indoorLayer = new L.Indoor(this.props.geoJSON, {
 ...
 \end{lstlisting}
 
-This renders the GeoJSON data on a map with a HTML layer for each feature.
+This creates a layer with the GeoJSON data where each feature is represented as an HTML element.
+This indoor layer is then added on top of an instance of the  Leaflet |Map|\cite{leaflet:map} class:
 
-\begin{itemize}
-\item Warum wird lat lng benoetigt?
+\begin{lstlisting}[label=addIndoorLayerToMap]
+indoorLayer.addTo(this.map);
+\end{lstlisting}
 
-\item Wie wird center rausgefunden vlt noch spannend
-
-\item Hier erwaehnen das jedes feature eine ID benoetigt und so.
-\end{itemize}
-
-%Considering the limited time we had for the implementation, we decided that Leaflet fits our needs the best and could be the fastest way to build our interactive live floorplan.
-
-
+%TODO
+%\begin{itemize}
+%\item Warum wird lat lng benoetigt?
+%\item Wie wird center rausgefunden vlt noch spannend
+%\end{itemize}
 
 
 \subsection{Interactive Floorplan}
@@ -106,22 +101,18 @@ The floorplan handles mouse clicks on each room that is displayed. If a click ev
 
 \begin{lstlisting}[label=addMarkers]
 handleClickOnRoom = (event) => {
-        this.addMarker(
-          event.latlng, 
-          { gateId: undefined, assignedRoomId: event.target.feature.id }, 
-          true);
-    };
+	this.addMarker(
+		event.latlng, 
+		{ gateId: undefined, assignedRoomId: event.target.feature.id }, 
+		true);
+	};
 \end{lstlisting}
 
-To create this connection between the room and the marker, each feature/room in the GeoJSON file has to have a distinguashble member attribute \emph{id}. This is still following the GeoJSON format specification.
+To create this connection between the room and the marker, each room represented in the GeoJSON file has to have a unique member attribute \emph{id}.\footnote{This is still following the GeoJSON format specification according to \url{https://geojson.org/geojson-spec.html\#feature-objects}}
 
-After setting the marker it needs to be linked with a gate. This is done by a selection input.
+After setting the marker it needs to be linked with a gate, which is done by a selection input presenting all available gates. After successfully linking it to a gate the marker gets persisted in our database.
 
-\emph{\textbf Bild von selection}
-
-\begin{itemize}
-\item Panning und zooming bietet leaflet schon von hause aus
-\end{itemize}
+The map is capable of also handling pan events for moving to another location and scroll events for zooming in and out. This functionality is part of the |Map| class from Leaflet.
 
 \subsection{Logging of Gate Events}
 \label{Logging of Gate Events}
@@ -129,29 +120,35 @@ After setting the marker it needs to be linked with a gate. This is done by a se
 \subsubsection{Elastic Stack}
 \label{Elastic Stack}
 
+To support the functionality to log gate events we make use of the Elastic Stack\footnote{https://www.elastic.co/de/products/elastic-stack}.
 The Elastic Stack consists of mainly three open-source projects: \emph{Elasticsearch}, \emph{Logstash} and \emph{Kibana}.
 Together they form a pipeline that can be used to analyze, search and visualize logs created from different sources. 
 
 The component of the first stage of this pipeline is Logstash, which is responsible for collecting data from different locations and transforming it for the next step. Elasticsearch then indexes these logs and provides a RESTful API for searching. Kibana uses this API from Elasticsearch to provide meaningful visualization of the logs.
 Through a smart indexing technology the Elastic Stack promises a fast response time even for large data sets and is used by companies like Netflix for monitoring security related logs or Medium for debugging production issues \footnote{\url{https://hackernoon.com/elastic-stack-a-brief-introduction-794bc7ff7d4f}}.
 
-In our project logs sent from the gates need to be analyzed and visualized to give the FM Team more insights about the access decisions made. These informations get also displayed in the floorplan and the heatmap gets calculated based on the gate event logs. To ensure a fast display of the access decision data and to also ensure the possibility in the future to search and visualize logs not only from the gates, but from other sources also, we decided to include the Elastic Stack into our project.
+%In our project logs sent from the gates need to be analyzed and visualized to give the facility management team more insights about the access decisions made. These informations get also displayed in the floorplan and the heatmap gets calculated based on the gate event logs. 
+To ensure a fast display of the access decision data and to also ensure the possibility in the future to search and visualize logs not only from the gates, but from other sources also, we decided to utilize the Elastic Stack.
 
 \subsubsection{Elasticsearch Server}
 
-Since we're working with own custom visualization, we will ignore Kibana for our implementation. And since we're only receiving events  from one source - the gates, we can skip the Logstash pipeline and send event data directly to the Elasticsearch server, which then will be stored in a database and indexed.
+Since we're working with own custom visualization, we will ignore Kibana for our implementation. And since we're only receiving events from one source - the gates, we can skip the Logstash pipeline step and send event data directly to the Elasticsearch server, which then will be stored in a database and indexed.
 
 Since data of any form can be sent to the Elasticsearch server, it performs an automatic type detection for each property that is sent. This can result in wrong datatypes, causing the server to reject future events because they're not fulfilling the required datatypes\footnote{For example: The first event has a member \emph{id} with the value "1234". The Elasticsearch server will automatically interpret this value as an Integer and set is as required datatype. If the following event now has an id of "fe123d" the server will not accept this event.}. To prevent this, we first have to create a template for our gate event objects, which strictly declares the datatypes for each property in the event object:
+
+\clearpage
 
 \begin{lstlisting}[label=curlScriptTemplateElastic]
 curl -v -X PUT 'localhost:9200/_template/gates' -H 'Content-Type: application/json' -d '
 {
   "index_patterns" : ["gates"],
   "settings": {
+  /* Shards allow to split up the content volume that is taken by the documents that are inside a single index. This enables good scaling, by allowing the documents not to reside on just one single harddrive but multiple. Since we are currently not receiving that much data yet it is sufficient to only work with one shard for now.*/
     "number_of_shards": 1
   },
   "mappings": {
     "_source": {
+    // allows for example updating a document
       "enabled": true
     },
     "properties": {
@@ -166,9 +163,10 @@ curl -v -X PUT 'localhost:9200/_template/gates' -H 'Content-Type: application/js
 }'
 \end{lstlisting}
 
-\emph{was ist unterschied zwischen integer und keyword, warum ist die suche dadurch besser?}
+%TODO
+Was ist unterschied zwischen integer und keyword, warum ist die suche dadurch besser?
 
-To enable the fast search mechanism we then have to create the index for the gate:
+We then create a \emph{gates} index. All logs for the gates will be stored under that index.
 
 \begin{lstlisting}[label=curlScriptElastic]
 curl -v -X PUT 'localhost:9200/gates'
@@ -188,7 +186,8 @@ function postGateEvent(eventData) {
 }
 \end{lstlisting}
 
-This endpoint is available from outside and protected by a preshared token that need to be set in the Authorization Header. The gates have to transmit the ID of the device that tried to access, the access type (entry or exit), the gate ID and if the entry or exit was successful. Moreover they can send the optional parameters loglevel and message. The loglevel can be used to signalize an alarm event and the message parameter can be used to send over more detailed information.
+This endpoint is exposed to the outside so gates can communicate to our system. To protect this route from being exploited from other sources than the gates we use a preshared token that needs to be set in the \emph{Authorization} header.
+ The endpoint requires a transfer of the ID of the device that tried to access, the access type (entry or exit), the gate ID and if the entry or exit was successful. Moreover the optional parameters loglevel and message can be send. The loglevel can be used to signalize an alarm event and the message parameter can be used to send over more detailed information.
 
 The Elasticsearch server also offers an interface to search for logs satisfying specific conditions. This is how we can look up all the events at a gate that are of a specific access type:
 
@@ -246,37 +245,37 @@ function handleSockets(server) {
 To ensure that we only send data to clients that are authenticated, we need to verify the token that is sent with each packet. This is done by installing a middleware on to our Socket.IO server that includes a function that gets executed for every packet that is sent. This function verifies that the token sent is a valid access token.
 
 \begin{lstlisting}[label=createSocketIOMiddleware]
-    io.use((socket, next) => {
-        const { token } = socket.handshake.query;
-        const verifyToken = keycloakHelpers.verifyToken(token);
-        return verifyToken
-            .then(() => next())
-            .catch(err => next(err));
-    });
+io.use((socket, next) => {
+    const { token } = socket.handshake.query;
+    const verifyToken = keycloakHelpers.verifyToken(token);
+    return verifyToken
+        .then(() => next())
+        .catch(err => next(err));
+});
 \end{lstlisting}
 
 Everytime a frontend client now connects to the server, the server extracts the userId from the token that was sent by the client. We then create a \emph{Room}\cite{socketio:rooms} - a seperated communication channel - with this userId, so that we can emit notifications only to that specific user. If the logged in user is also an admin, he gets added to an admin room, a room where all other admins that are connected are also inside.
 
 \begin{lstlisting}[label=onConnection]
 io.on('connection', (socket) => {
-        const { token } = socket.handshake.query;
-        const parsedToken = jwt.decode(token);
+	const { token } = socket.handshake.query;
+	const parsedToken = jwt.decode(token);
 
-        const isAdmin = parsedToken.realm_access.roles.includes('admin');
-        const userId = parsedToken.sub;
+	const isAdmin = parsedToken.realm_access.roles.includes('admin');
+	const userId = parsedToken.sub;
 
-        if (isAdmin) socket.join('admin');
-        socket.join(userId);
-    });
+	if (isAdmin) socket.join('admin');
+	socket.join(userId);
+});
 \end{lstlisting}
 
 We can then emit messages to specific users or to all admins through a helper function:
 \begin{lstlisting}[label=emitMessage]
 module.exports.emitMessage = (user, emitType, message) => {
-        // user can be either a userId or 'admin'
-        // all current client sessions with logged in user will receive message
-        io.to(user).emit(emitType, message);
-    };
+	// user can be either a userId or 'admin'
+	// all current client sessions with logged in user will receive message
+	io.to(user).emit(emitType, message);
+};
 \end{lstlisting}
 
 This method gets called everytime the gates send an event through our backend interface that we presented earlier. We use the room 'admin' to notify all admins at the same time.
@@ -340,20 +339,20 @@ To calculate the number of people we use an endpoint in our backend that looks a
 This result is then the input for colorizing the room:
 
 \begin{lstlisting}[label=colorizeRoom]
-	colorizeRoom = (roomId, numberOfPeople) => {
-        let occupancyRate = numberOfPeople / constants.ROOM_PERSON_COUNT_LIMIT;
-        if (occupancyRate > 1) occupancyRate = 1;
-        if (occupancyRate < 0) occupancyRate = 0;
+colorizeRoom = (roomId, numberOfPeople) => {
+    let occupancyRate = numberOfPeople / constants.ROOM_PERSON_COUNT_LIMIT;
+    if (occupancyRate > 1) occupancyRate = 1;
+    if (occupancyRate < 0) occupancyRate = 0;
 
-        const room = this.findRoomWithId(roomId);
+    const room = this.findRoomWithId(roomId);
 
-        room.setStyle({ fillColor: this.getColorForOccupancyRate(occupancyRate) });
-    };
+    room.setStyle({ fillColor: this.getColorForOccupancyRate(occupancyRate) });
+};
 \end{lstlisting}
 
-Because we can only work with events from the gates and no indoor-positioning technology, we're unable to locate the exact position of single device. Therefore we colorize the entire room evenly.
+Because we can only work with events from the gates and no indoor positioning technology, we're unable to locate the exact position of single device. Therefore we colorize the entire room evenly.
 
-We follow the To represent the occupancy of a room we use colors on a scale from green to red, with green representing a room with no people inside and with red a room that hit its maximum capacity. 
+We follow the common convention in heatmaps of representing the occupancy of a room by using colors on a scale from green to red, with green representing a room with no people inside and with red a room that hit its maximum capacity. 
 
 \begin{lstlisting}[label=getColorForOccupancyRate]
     getColorForOccupancyRate = (rate) => {
@@ -368,9 +367,9 @@ We follow the To represent the occupancy of a room we use colors on a scale from
 
 \subsubsection{Access Decision Information}
 
-More information about the access decisions get also displayed in real-time in a table (\emph{Activity Monitor}) below the interactive floorplan (Figure X).
+More information about the access decisions get also displayed in real-time in a table (\emph{Activity Monitor}) below the interactive floorplan (Figure 4).
 
-Because the gates transmit the deviceId in the event object, the relationship to the owner of the device can be made:
+Because the gates transmit the deviceId in the event object, the relationship to the owner of the device can be made through our backend. This happens each time an gate event occurs and we add the information as a new row into the Activity Monitor:
 
 \begin{lstlisting}[label=addMessage]
 addMessage = (logMessage) => {
@@ -381,7 +380,7 @@ addMessage = (logMessage) => {
             logMessages.shift();
         }
 
-		// get user information with the device ID provided in the event object
+			// get user information with the device ID provided in the event object
         getDeviceById(logMessage.deviceId)
             .then(device => getUserById(device.userId))
             .then(user => {
@@ -392,7 +391,7 @@ addMessage = (logMessage) => {
     };
 \end{lstlisting}
 
-Now information about the time of the event, the person that is connected with the event, the access type, the success of the access and the gate Id can be displayed.
+For each event we display information about the time, the person that is connected with the event, the access type, the success of the access and the gate Id where the event happened.
 
 \subsubsection{Alarm}
 
