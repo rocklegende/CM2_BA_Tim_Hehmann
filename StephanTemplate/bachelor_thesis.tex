@@ -25,6 +25,7 @@
 \usepackage{enumitem}
 \usepackage{listings}
 \usepackage{wrapfig}
+\usepackage[hyphens]{url}
 \usepackage[colorinlistoftodos,prependcaption,textsize=tiny]{todonotes}
 \usepackage[pdftex, colorlinks, linktocpage, linkcolor=black, citecolor=black, urlcolor=black]{hyperref}
 \usepackage[linesnumbered]{algorithm2e}
@@ -117,11 +118,18 @@
 	%%% TOC
 	\tableofcontents
 	\clearpage
+	
+	\listoffigures	
+	
+	\renewcommand{\lstlistlistingname}{List of Code Listings}
+	\lstlistoflistings
+	
+	\clearpage
 
 	\mainmatter
 	%% Content
 	\input{content/introduction.tex}
-	\input{content/background.tex}
+	%\input{content/background.tex}
 	\input{content/relatedWork.tex}
 	\input{content/concept.tex}
 	\input{content/implementation.tex}

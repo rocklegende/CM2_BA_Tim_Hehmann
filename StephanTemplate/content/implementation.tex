@@ -1,12 +1,7 @@
 \section{Implementation}
 As this was part of our access management platform we implemented this floorplan also as a web application.
 
-\begin{figure}[!hb]
-	\centering
-	\includegraphics[width=0.9\linewidth]{images/FloorplanScreenshot}
-	\caption{Implemented interactive floorplan}
-	\label{fig:FloorplanScreenshot}
-\end{figure}
+
 
 \subsection{Technology Discussion}
 
@@ -54,21 +49,20 @@ This can be used to encode the geometry for countries, houses and streets on a m
 
 \subsubsection{Summary}
 
-%Google Maps
 Although Google Maps looks very promising for creating our indoor floorplan, there are quite a few problems for us: Because the API needs an internet connection, offline development is not possible. 
 Furthermore the Google Maps API would request payment after hitting the threshold of API calls mentioned above and therefore needs to be linked to an account where billing is activated. Although hitting this threshold could only happen in production, our project partner set the requirement to only use free and also open-source software and linking a billing account of our partner to use the API was not possible. 
 
-OpenLayers wins here over Google Maps because of the open-source codebase. Additionaly it provides a lot of features for interactive maps out of the box.
-But because it has a lot of features already bundled together, it offers far more functionality than we need to meet the requirements of our floorplan. This also results in a heavyweight module. With a minified bundle size of 330.1 kB (Version 5.3.3) it takes up to 1.6 seconds to download on 3G\footnote{\url{https://bundlephobia.com/result?p=ol@5.3.3}}. Although this can be lowered for production by deleting unused modules, it takes extra effort to see which modules are really not used.
+Unlike Google Maps, OpenLayers provides an open-source library, which provides a lot of features for interactive maps out of the box.
+But because it has a lot of features already bundled together the OpenLayers module is a heavyweight module. With a minified bundle size of 330.1 kB (Version 5.3.3) it takes up to 1.6 seconds to download on 3G\footnote{\url{https://bundlephobia.com/result?p=ol@5.3.3}}. Although this can be lowered for production by deleting unused modules, it takes extra effort to see which modules are really not used.
 
-All in all, we decided to build our interactive map with the Leaflet library, because of it leightweightness and the possibility to easily extend existing classes, which is useful for configuring the interactive floorplan exactly for our needs. Besides that we will also use GeoJSON as the format for the external input of the geometric data of each room in the office. We base this decision on the fact that GeoJSON is a widely used and standardized format for encoding geospatial data.
+Leaflet solves this problem by providing only a core set of functionalities which can easily be extended by self-written or community plugins. This reduces the size of the module. All in all, we decided to build our interactive map with the Leaflet library, because of its leightweightness and its extensibility, which is useful for configuring the interactive floorplan exactly for our needs. Besides that we will also use GeoJSON as the format for the external input of the geometric data of each room in the office. We base this decision on the fact that GeoJSON is a widely used and standardized format for encoding geospatial data.
 
 \subsection{Display of indoor features}
 \label{Display of indoor features}
 
-The indoor map plugin extends Leaflet by an |Indoor| class, which is able to load in geospatial data from a GeoJSON file:
+The indoor map plugin extends Leaflet by an |Indoor| class, which is able to load in geospatial data from a GeoJSON file (Listing~\ref{listing:setupMapFromGeoJSON}):
 
-\begin{lstlisting}[label=setupMap]
+\begin{lstlisting}[label={listing:setupMapFromGeoJSON},caption={Setup map from GeoJSON data}]
 ...
 // leaflet map gets rendered inside a div that has the id of the first parameter
 this.map = L.map('floorplan-container', {
@@ -80,10 +74,10 @@ const indoorLayer = new L.Indoor(this.props.geoJSON, {
 ...
 \end{lstlisting}
 
-This creates a layer with the GeoJSON data where each feature is represented as an HTML element.
-This indoor layer is then added on top of an instance of the  Leaflet |Map|\cite{leaflet:map} class:
+This creates a layer with the GeoJSON data where each feature is represented as a HTML element.
+This indoor layer is then added on top of an instance of the  Leaflet |Map|\cite{leaflet:map} class (Listing~\ref{listing:addIndoorLayerToMap}):
 
-\begin{lstlisting}[label=addIndoorLayerToMap]
+\begin{lstlisting}[label={listing:addIndoorLayerToMap},caption={Adding indoor layer to map}]
 indoorLayer.addTo(this.map);
 \end{lstlisting}
 
@@ -97,9 +91,9 @@ indoorLayer.addTo(this.map);
 \subsection{Interactive Floorplan}
 \label{Interactive Floorplan}
 
-The floorplan handles mouse clicks on each room that is displayed. If a click event occurs, it adds a new marker at this position, which is then automatically linked with the room where the click occured.
+The floorplan handles mouse clicks on each room that is displayed (Listing~\ref{listing:handlingClicksOnARoom}). If a click event occurs, it adds a new marker at this position, which is then automatically linked with the room where the click occured.
 
-\begin{lstlisting}[label=addMarkers]
+\begin{lstlisting}[label={listing:handlingClicksOnARoom},caption={Handling clicks on a room}]
 handleClickOnRoom = (event) => {
 	this.addMarker(
 		event.latlng, 
@@ -117,9 +111,6 @@ The map is capable of also handling pan events for moving to another location an
 \subsection{Logging of Gate Events}
 \label{Logging of Gate Events}
 
-\subsubsection{Elastic Stack}
-\label{Elastic Stack}
-
 To support the functionality to log gate events we make use of the Elastic Stack\footnote{https://www.elastic.co/de/products/elastic-stack}.
 The Elastic Stack consists of mainly three open-source projects: \emph{Elasticsearch}, \emph{Logstash} and \emph{Kibana}.
 Together they form a pipeline that can be used to analyze, search and visualize logs created from different sources. 
@@ -134,11 +125,11 @@ To ensure a fast display of the access decision data and to also ensure the poss
 
 Since we're working with own custom visualization, we will ignore Kibana for our implementation. And since we're only receiving events from one source - the gates, we can skip the Logstash pipeline step and send event data directly to the Elasticsearch server, which then will be stored in a database and indexed.
 
-Since data of any form can be sent to the Elasticsearch server, it performs an automatic type detection for each property that is sent. This can result in wrong datatypes, causing the server to reject future events because they're not fulfilling the required datatypes\footnote{For example: The first event has a member \emph{id} with the value "1234". The Elasticsearch server will automatically interpret this value as an Integer and set is as required datatype. If the following event now has an id of "fe123d" the server will not accept this event.}. To prevent this, we first have to create a template for our gate event objects, which strictly declares the datatypes for each property in the event object:
+Since data of any form can be sent to the Elasticsearch server, it performs an automatic type detection for each property that is sent. This can result in wrong datatypes, causing the server to reject future events because they're not fulfilling the required datatypes\footnote{For example: The first event has a member \emph{id} with the value "1234". The Elasticsearch server will automatically interpret this value as an Integer and set it as required datatype. If the following event now has an id of "fe123d" (String) the server will not accept this event.}. To prevent this, we first have to create a template for our gate event objects, which strictly declares the datatypes for each property in the event object (Listing~\ref{listing:curlScriptTemplateElastic}):
 
 \clearpage
 
-\begin{lstlisting}[label=curlScriptTemplateElastic]
+\begin{lstlisting}[label={listing:curlScriptTemplateElastic},caption={cURL script for creating gates index template}]
 curl -v -X PUT 'localhost:9200/_template/gates' -H 'Content-Type: application/json' -d '
 {
   "index_patterns" : ["gates"],
@@ -163,17 +154,16 @@ curl -v -X PUT 'localhost:9200/_template/gates' -H 'Content-Type: application/js
 }'
 \end{lstlisting}
 
-%TODO
-Was ist unterschied zwischen integer und keyword, warum ist die suche dadurch besser?
+%TODO Was ist unterschied zwischen integer und keyword, warum ist die suche dadurch besser?
 
-We then create a \emph{gates} index. All logs for the gates will be stored under that index.
+We then create a \emph{gates} index (Listing~\ref{listing:elasticsearchGatesIndex}). All logs for the gates will be stored under that index.
 
-\begin{lstlisting}[label=curlScriptElastic]
+\begin{lstlisting}[label={listing:elasticsearchGatesIndex},caption={cURL script for creating gates index}]
 curl -v -X PUT 'localhost:9200/gates'
 \end{lstlisting}
 
-This server then offers an REST API endpoint for creating gate event logs:
-\begin{lstlisting}[label=searchElasticPOST]
+This server then offers an REST API endpoint for creating gate event logs (Listing~\ref{listing:searchElasticPOST}):
+\begin{lstlisting}[label={listing:searchElasticPOST},caption={Interface of Elasticsearch server to create gate event logs}]
 function postGateEvent(eventData) {
     return fetch(`http://${elasticsearchBasePath}/gates/_doc`, {
         headers: {
@@ -189,9 +179,9 @@ function postGateEvent(eventData) {
 This endpoint is exposed to the outside so gates can communicate to our system. To protect this route from being exploited from other sources than the gates we use a preshared token that needs to be set in the \emph{Authorization} header.
  The endpoint requires a transfer of the ID of the device that tried to access, the access type (entry or exit), the gate ID and if the entry or exit was successful. Moreover the optional parameters loglevel and message can be send. The loglevel can be used to signalize an alarm event and the message parameter can be used to send over more detailed information.
 
-The Elasticsearch server also offers an interface to search for logs satisfying specific conditions. This is how we can look up all the events at a gate that are of a specific access type:
+The Elasticsearch server also offers an interface to search for logs satisfying specific conditions. This is how we can look up all the events at a gate that are of a specific access type (Listing~\ref{listing:elasticsearchRequest}):
 
-\begin{lstlisting}[label=searchElasticGET]
+\begin{lstlisting}[label={listing:elasticsearchRequest},caption={Example search request to Elasticsearch server}]
 function fetchAllEventsAtGateWithAccessType(gateId, accessType) {
     const now = new Date().toISOString();
     const officeOpening = getOfficeOpeningDatetime().toISOString();
@@ -215,21 +205,20 @@ function fetchAllEventsAtGateWithAccessType(gateId, accessType) {
 \subsection{Real-time Floorplan}
 \label{Real-time Floorplan}
 
-\subsubsection{Socket.IO}
-\label{Socket.IO}
-
-Socket.IO is a JavaScript library that makes it possible to implement real-time applications. This is achieved through an event-based, bidirectional communication between the client and the server. 
+To implement a real-time floorplan we utilize the \emph{Socket.IO} JavaScript library, a library which enables to implement real-time applications. This is achieved through an event-based, bidirectional communication between the client and the server. 
 
 Although Socket.IO also uses WebSockets for transportation it is not an implementation of the WebSocket-protocol. It extends and combines multiple real-time protocols and switches between them if needed. Therefore a connection can only be established between a Socket.IO client and a Socket.IO server\footnote{\url{https://socket.io/docs/index.html}}.
 
-Socket.IO offers an easy to understand API and also comes with a lot of benefits like creating realiable connections by having different fallback real-time methods, auto reconnection support and the detection of disconnections.
+We decided to use Socket.IO, because of its easy to understand API and its functionality set. It provides the creation of realiable connections by having different fallback real-time methods, auto reconnection support and the detection of disconnections.
+
+In the following sections we will explain the setup of Socket.IO in the backend and frontend and how this setup is used to implement a real-time floorplan.
 
 \subsubsection{Backend}
 \label{Backend}
 
-We first have to create a Socket.IO |Server|\cite{socketio:server} instance by binding it to the existing HTTP server we have for our backend:
+We first have to create a Socket.IO |Server|\cite{socketio:server} instance by binding it to the existing HTTP server we have for our backend (Listing~\ref{listing:creationOfSocketIOserver}):
 
-\begin{lstlisting}[label=createSocketIOServer]
+\begin{lstlisting}[label={listing:creationOfSocketIOserver},caption={Creation of Socket.IO server}]
 //app.js
 const server = http.createServer(app);
 socketHelpers.handleSockets(server);
@@ -242,9 +231,9 @@ function handleSockets(server) {
 }
 \end{lstlisting}
 
-To ensure that we only send data to clients that are authenticated, we need to verify the token that is sent with each packet. This is done by installing a middleware on to our Socket.IO server that includes a function that gets executed for every packet that is sent. This function verifies that the token sent is a valid access token.
+To ensure that we only send data to clients that are authenticated, we need to verify the token that is sent with each packet. This is done by installing a middleware on to our Socket.IO server that includes a function that gets executed for every packet that is sent. This function verifies that the token sent is a valid access token (Listing~\ref{listing:createSocketIOMiddleware}).
 
-\begin{lstlisting}[label=createSocketIOMiddleware]
+\begin{lstlisting}[label={listing:createSocketIOMiddleware},caption={Middleware of Socket.IO server}]
 io.use((socket, next) => {
     const { token } = socket.handshake.query;
     const verifyToken = keycloakHelpers.verifyToken(token);
@@ -254,9 +243,9 @@ io.use((socket, next) => {
 });
 \end{lstlisting}
 
-Everytime a frontend client now connects to the server, the server extracts the userId from the token that was sent by the client. We then create a \emph{Room}\cite{socketio:rooms} - a seperated communication channel - with this userId, so that we can emit notifications only to that specific user. If the logged in user is also an admin, he gets added to an admin room, a room where all other admins that are connected are also inside.
+Everytime a frontend client now connects to the server, the server extracts the userId from the token that was sent by the client. We then create a \emph{Room}\cite{socketio:rooms} - a seperated communication channel - with this userId, so that we can emit notifications only to that specific user. If the logged in user is also an admin, he gets added to an admin room, a room where all other admins that are connected are also inside. The implementation of this can be seen in Listing~\ref{listing:onConnection}.
 
-\begin{lstlisting}[label=onConnection]
+\begin{lstlisting}[label={listing:onConnection},caption={Handling client connections to Socket.IO server}]
 io.on('connection', (socket) => {
 	const { token } = socket.handshake.query;
 	const parsedToken = jwt.decode(token);
@@ -269,8 +258,8 @@ io.on('connection', (socket) => {
 });
 \end{lstlisting}
 
-We can then emit messages to specific users or to all admins through a helper function:
-\begin{lstlisting}[label=emitMessage]
+We can then emit messages to specific users or to all admins through a helper function (Listing~\ref{listing:emitMessage}):
+\begin{lstlisting}[label={listing:emitMessage},caption={Helper function for emitting notifications}]
 module.exports.emitMessage = (user, emitType, message) => {
 	// user can be either a userId or 'admin'
 	// all current client sessions with logged in user will receive message
@@ -278,9 +267,9 @@ module.exports.emitMessage = (user, emitType, message) => {
 };
 \end{lstlisting}
 
-This method gets called everytime the gates send an event through our backend interface that we presented earlier. We use the room 'admin' to notify all admins at the same time.
+This method gets called everytime the gates send an event through our backend interface that we presented earlier. We use the room 'admin' to notify all admins at the same time (Listing~\ref{listing:socketIOBackendNotification}).
 
-\begin{lstlisting}[label=socketIOBackendNotification]
+\begin{lstlisting}[label={listing:socketIOBackendNotification},caption={Emission of notification to all admins}]
 function notifyAboutEvent(data) {
     if (data.loglevel.toUpperCase() === constants.ALARM_LOG_LEVEL) {
         notificationHelpers.notifyAdminOnAlarm(data);
@@ -293,9 +282,9 @@ function notifyAboutEvent(data) {
 \subsubsection{Frontend}
 \label{Frontend}
 
-The frontend has to install the Socket.IO JavaScript library and then initialize a |Socket|\cite{socketio:socket}. Handlers are then registered to that |Socket| for the different notification events from the backend.
+The frontend has to install the Socket.IO JavaScript library and then initialize a |Socket|\cite{socketio:socket}. Handlers are then registered to that |Socket| for the different notification events from the backend (Listing~\ref{listing:socketIOClientSide}).
 
-\begin{lstlisting}[label=socketIOClientSide]
+\begin{lstlisting}[label={listing:socketIOClientSide},caption={Setup of Socket}]
 listenForGateEvents = () => {
         const socket = io({
             secure: true,
@@ -315,9 +304,9 @@ listenForGateEvents = () => {
 
 \subsubsection{Heatmap}
 
-Everytime an event occurs the marker that is linked with the gate Id of the event object is searched. Then the room id that is connected with this marker is recolorized based on the updated number of people that are behind this gate:
+Everytime an event occurs the marker that is linked with the gate Id of the event object is searched. Then the room id that is connected with this marker is recolorized based on the updated number of people that are behind this gate (Listing~\ref{listing:gateEventHappened}):
 
-\begin{lstlisting}[label=gateEventHappened]
+\begin{lstlisting}[label={listing:gateEventHappened},caption={Handling gate events in frontend}]
 gateEventHappened = (event) => {
         const gateMarker = this.findGateMarkerWithId(event.gateId);
 
@@ -336,9 +325,9 @@ gateEventHappened = (event) => {
 
 To calculate the number of people we use an endpoint in our backend that looks at the datetime of the office opening at the day the request to the endpoint is made. At this time we expect that no people are inside the office. It then counts all entries and exits at the gate with the given id that were successful and after the office opening. By subtracting the exits from the entries we get the number of people that are behind this gate.
 
-This result is then the input for colorizing the room:
+This result is then the input for colorizing the room (Listing~\ref{listing:colorizeRoom}):
 
-\begin{lstlisting}[label=colorizeRoom]
+\begin{lstlisting}[label={listing:colorizeRoom},caption={Function for colorizing a room}]
 colorizeRoom = (roomId, numberOfPeople) => {
     let occupancyRate = numberOfPeople / constants.ROOM_PERSON_COUNT_LIMIT;
     if (occupancyRate > 1) occupancyRate = 1;
@@ -352,9 +341,9 @@ colorizeRoom = (roomId, numberOfPeople) => {
 
 Because we can only work with events from the gates and no indoor positioning technology, we're unable to locate the exact position of single device. Therefore we colorize the entire room evenly.
 
-We follow the common convention in heatmaps of representing the occupancy of a room by using colors on a scale from green to red, with green representing a room with no people inside and with red a room that hit its maximum capacity. 
+We follow the common convention in heatmaps of representing the occupancy of a room by using colors on a scale from green to red, with green representing a room with no people inside and with red a room that hit its maximum capacity. The calculation for the color can be seen in Listing~\ref{listing:getColorForOccupancyRate}.
 
-\begin{lstlisting}[label=getColorForOccupancyRate]
+\begin{lstlisting}[label={listing:getColorForOccupancyRate},caption={Function for calculating color based on occupancy}]
     getColorForOccupancyRate = (rate) => {
         /*
             input: value from 0 to 1
@@ -369,9 +358,16 @@ We follow the common convention in heatmaps of representing the occupancy of a r
 
 More information about the access decisions get also displayed in real-time in a table (\emph{Activity Monitor}) below the interactive floorplan (Figure 4).
 
-Because the gates transmit the deviceId in the event object, the relationship to the owner of the device can be made through our backend. This happens each time an gate event occurs and we add the information as a new row into the Activity Monitor:
+\begin{figure}[!hb]
+	\centering
+	\includegraphics[width=0.9\linewidth]{images/FloorplanScreenshot}
+	\caption{Implemented interactive floorplan}
+	\label{fig:FloorplanScreenshot}
+\end{figure}
 
-\begin{lstlisting}[label=addMessage]
+Because the gates transmit the deviceId in the event object, the relationship to the owner of the device can be made through our backend. This happens each time an gate event occurs and we add the information as a new row into the Activity Monitor (Listing~\ref{listing:addMessage}):
+
+\begin{lstlisting}[label={listing:addMessage},caption={Function for adding message to Activity Monitor}]
 addMessage = (logMessage) => {
         const { logMessages } = this.state;
         
@@ -395,9 +391,9 @@ For each event we display information about the time, the person that is connect
 
 \subsubsection{Alarm}
 
-To visualize an alarm event at a gate we colorize the marker red and display a red log message in the Activity Monitor:
+To visualize an alarm event at a gate we colorize the marker red and display a red log message in the Activity Monitor (Listing~\ref{listing:alarmEventHappened}):
 
-\begin{lstlisting}[label=alarmEventHappened]
+\begin{lstlisting}[label={listing:alarmEventHappened},caption={Handling gate alarm events in frontend}]
 gateAlarmHappened = (event) => {
         const gateMarker = this.findGateMarkerWithId(event.gateId);
         if (gateMarker) {
@@ -406,9 +402,9 @@ gateAlarmHappened = (event) => {
     };
 \end{lstlisting}
 
-Furthermore the backend automatically sends an email to all admins with the information about the incident.
+Furthermore the backend automatically sends an email to all admins with the information about the incident (Listing~\ref{listing:notifyOnAlarm}):
 
-\begin{lstlisting}[label=notifyOnAlarm]
+\begin{lstlisting}[label={listing:notifyOnAlarm},caption={Notifying admins on alarm event}]
 function notifyAdminOnAlarm(alarmEvent) {
     socketHelpers.emitMessage('admin', socketHelpers.GATE_ALARM, alarmEvent);
     // send mail to every admin
