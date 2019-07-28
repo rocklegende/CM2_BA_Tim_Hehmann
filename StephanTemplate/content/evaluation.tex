@@ -1,29 +1,122 @@
 \section{Evaluation}
 
-\subsection{Setup}
-\label{Setup}
+In this chapter we will evaluate our interactive floorplan by looking at how well it fulfills the requirements from the Concept chapter. The evaluation will be based on the result of several different measurements. We will explain how these measurements are setup and put the results into context. Besides that we will also discuss the protection of data privacy in our floorplan.
 
-\subsection{Simulation Sizes}
-\label{Simulation Sizes}
+\subsection{Real-time Data Visualization}
 
-Zeigen wie schnell die anfragen zu elastic sind etc
+In order to measure how performant the real-time data visualization in our system is, we wrote a bash script that fires fake gate events to our backend at different time intervals (Listing~\ref{listing:realtimeEvaluationScript}). The script will execute 100 requests to our backend, which are running asynchronously.
 
-Wie lange dauert rendern
+\begin{lstlisting}[label={listing:realtimeEvaluationScript},caption={Bash Script for creating fake gate events at intervals}]
+#!/bin/bash
+GATE_COUNT=10
+DEVICE_ID_WHICH_ACCESSED="c8ce80bc-c238-44bf-bc8b-fe68a3dbb957"
+SLEEP_TIME=0.1
 
-Verschiedene groesse der waittime
+createGateEventLog() {
+    // we will only use ENTRY type for this simulation
+    eventType="ENTRY"
 
-\subsubsection{Empire State Building Mittagspause}
+	// picks a random gate id 
+    GATE_ID=$RANDOM
+    let "GATE_ID %= $GATE_COUNT"
 
-\subsubsection{Small}
-\label{Small}
+	//fires event to development server
+    curl --insecure -v -X POST https://dev.baam.nexenio.com/api/logs 
+    		-H "Content-Type: application/json" 
+		-H "Authorization: Basic zdWIiOiIxMjM0NTY3ODkwIiwi" 
+		-d '{"gateId":"'"$GATE_ID"'", "wasSuccessful": "true", "accessType": "'"$eventType"'", "loglevel": "DEBUG", "deviceId":"'"$DEVICE_ID_WHICH_ACCESSED"'"}'
+}
 
-\subsubsection{Medium}
-\label{Medium}
+// make 100 calls to our backend
+for ((i=0;i<100;i++));
+do
+	// sleep time determines the interval at which the events are sent
+    sleep $SLEEP_TIME;
+    // the usage of the ampersand makes this call asynchronous
+    createGateEventLog &
+done
 
-\subsubsection{Large}
-\label{Large}
+\end{lstlisting}
+
+The script will result in multiple notifications from the backend about gate events. In the frontend we will then look at the delay time between the emission of these notifications  and the completion of certain methods. This measurement delivers a good metric for evaluating the real-time data visualization of our application, because we can determine the time gap between the actual gate event and the associated display in our floorplan.
+
+To measure the delay time the frontend client is looking at the timestamp of the event object it received through the notification from the backend and then creates a new timestamp once the desired function has been successfully terminated. By looking at the difference between the timestamps we can then calculate the delay time. The frontend client will keep track of all the 100 single delay measurements and calculate the average. 
+
+We setup two points of measurement in the frontend. The first measures the delay time for the completion of the method that recolorizes the room where the event happened and thereby updates the visual occupancy state of the room. The second is setup in the Activity Monitor and measures the delay for the completion of adding a new log message into the table.
+The results of this can be seen in Table~\ref{table:benchmark:transmissiondelay}.
+
+%TODO
+%ALARM UND HEATMAP koennen hier auch einfach mit rein, dann spar ich mir das mit denen
+
+\begin{table}[H]
+\centering
+   \begin{tabular}{l|l|l|l|}
+\cline{2-4}
+                                                                                                                                                                                                      & \begin{tabular}[c]{@{}l@{}}Low \\ Frequency\end{tabular} & \begin{tabular}[c]{@{}l@{}}Medium \\ Frequency\end{tabular} & \begin{tabular}[c]{@{}l@{}}High \\ Frequency\end{tabular} \\ \hline
+\multicolumn{1}{|l|}{Entries per minute}                                                                                                                                                              & 6                                                        & 60                                                          & 600                                                       \\ \hline
+\multicolumn{1}{|l|}{\begin{tabular}[c]{@{}l@{}}Delay time in milliseconds \\ between notification emission \\ (backend) and \\ recolorization of the room \\ (frontend)\end{tabular}}                & 166                                                      & 138                                                         & 343                                                       \\ \hline
+\multicolumn{1}{|l|}{\begin{tabular}[c]{@{}l@{}}Delay time in milliseconds \\ between notification emission \\ (backend) and \\ adding of log message to \\ Activity Monitor (frontend)\end{tabular}} & 219                                                      & 190                                                         & 14494                                                     \\ \hline
+\end{tabular}
+    \caption{Delay times between backend and frontend}
+    \label{table:benchmark:transmissiondelay}
+\end{table}
+
+As we can see, our application updates the color of the room quite fast in the low frequency and medium frequency simulations with a delay time of just 166ms at low frequency and 138ms at medium frequency.
+Also the addition of the log message happens fast with a delay time of 219ms at low frequency and 190ms at medium frequency.
+But at high frequency we can clearly see a drop in performance . Although the updating of the room color still happens quite fast with an average delay time of 343ms, the addition of the log message happens here with a delay time of 14.5 seconds. 
+
+This could be due to the fact that in the high frequency simulation the script from Listing~\ref{listing:realtimeEvaluationScript} is sending a request to our backend each 0.1 seconds (600 entries per minute), but the average completion time for the create event log POST request is 0.3 seconds. This means that our backend has to handle multiple POST requests at the same time, which could caused by the setup of our backend server. But also the high load of work that has to happen almost simultanously in the frontend could be the cause of the performance drop. 
+
+But although there are performance issues at high frequency, the average building will likely not have that many entries per minute, which makes our floorplan performant in displaying data in real-time for the average use case.
+
+\subsection{Logging Server Response Time}
+
+To measure how good the eventlogging in our system works, we will look at the response time from the search request we've seen in Listing~\ref{listing:elasticsearchRequest}
+at different amounts of logs in our log database. With this measurement we can see how performant searching through gate logs is in small and large environments. 
+
+We measured the response time by executing a bash script which executes a cURL request 100 times and calculates the average response time. 
+The result of this measurement can be seen in Table~\ref{table:elasticResponseTimes}.
+ 
+\begin{table}[H]
+\centering
+\begin{tabular}{l|llll}
+\textbf{Amount of logs}                                                      & \textbf{1000} & \textbf{10000} & \textbf{100000} & \textbf{1000000} \\ \hline
+\begin{tabular}[c]{@{}l@{}}Average response time\\ (in seconds)\end{tabular} &               & 0.33           & 0.31            & 0.34             \\ 
+\end{tabular}
+	\caption{Elasticsearch server response times}
+    \label{table:elasticResponseTimes}
+\end{table}
+
+We see that while the amount of logs is growing exponentially the average response time stays constant. Even for 1 million logs we still have the same response time as for 1000 logs, which makes the display of the heatmap on the floorplan fast, even for a large set of data. The usage of the Elasticsearch server with its fast searching mechanism build inside makes this performance possible.
+
+\subsection{Interactive Floorplan}
+
+Although there is no clear metric for evaluating interactivity we will look at the performance of the floorplan in click, drag and scroll events at different amounts of gate markers (10, 100 and 1000 markers in the same view frame) on the plan. We utilize the Google Chrome Performance tab for measuring the performances of the different events. The tests are done on a MacbookPro with an Intel Iris Graphics 6100 graphics card and a 2,7 GHz Intel Core i5 processor on Google Chrome (Version 75.0.3770.142). The results can be seen in Table ~\ref{table:performanceWebApplication}.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{Amount of gate markers}                                                                                 & \textbf{10} & \textbf{100} & \textbf{1000} \\ \hline
+\begin{tabular}[c]{@{}l@{}}Frames per second at drag event\\ (changing location in floorplan)\end{tabular}         & 49          & 19           & 2             \\ \hline
+\begin{tabular}[c]{@{}l@{}}Frames per second at scroll event \\ (changing zoom level of floorplan)\end{tabular} & 70          & 66           & 2             \\ \hline
+\begin{tabular}[c]{@{}l@{}}Execution time in milliseconds \\ of click event handler\end{tabular}                & 58          & 56           & 56            \\ \hline
+\end{tabular}
+	\caption{Web application performance for different events}
+    \label{table:performanceWebApplication}
+\end{table}
+
+The performance of handling the click events stays constant in our tests no matter the amount of gate markers on the map. But we can see that the rendering performance of the floorplan if the user drags or zooms is dependant on the number of gate markers. At an amount of 1000 gate markers in the viewframe the frames per seconds at dragging or scrolling drop to 2 frames per second. This makes the interactive floorplan very unresponsive and therefore uncomfortable at large amounts of gate markers. A better handling of rendering large amounts of html elements would be necessary.
 
 \subsection{Data Privacy}
 \label{Data Privacy}
+
+dadurch dass nur admins dies sehen duerfen alles ok.
+
+Application ist Abgesichert durch Passwort
+
+Nur admins kriegen notifications mit den daten, niemals irgendwelche user
+--> wird versichert durch richtige access token verifizierung
+
 
 \clearpage

@@ -32,7 +32,7 @@ OpenLayers is an open-source JavaScript library for displaying interactive maps.
 \subsubsection{Leaflet}
 \label{Leaflet}
 
-Leaflet is another open-source JavaScript library for creating interactive maps. With it's first version released in 2011, it is a well established and tested library. 
+Leaflet is another open-source JavaScript library for creating interactive maps. With its first version released in 2011, it is a well established and tested library. 
 
 By only including core features for map visualization, it only has a bundled size of 138.6KB\footnote{\url{https://bundlephobia.com/result?p=leaflet@1.5.1}}, making it a very lightweight library.
 
@@ -284,7 +284,7 @@ function notifyAboutEvent(data) {
 
 The frontend has to install the Socket.IO JavaScript library and then initialize a |Socket|\cite{socketio:socket}. Handlers are then registered to that |Socket| for the different notification events from the backend (Listing~\ref{listing:socketIOClientSide}).
 
-\begin{lstlisting}[label={listing:socketIOClientSide},caption={Setup of Socket}]
+\begin{lstlisting}[label={listing:socketIOClientSide},caption={Setup of Socket.IO socket}]
 listenForGateEvents = () => {
         const socket = io({
             secure: true,
