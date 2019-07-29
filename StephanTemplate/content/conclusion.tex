@@ -3,8 +3,8 @@ We had the goal of designing and implementing an interactive floorplan which fea
 
 We only had access to the access decision data coming from the gates. Therefore all software that is working with indoor positioning technologies for displaying indoor heatmaps cannot be used. For that reason we implemented this floorplan web application from the ground up. As a basis we used the GeoJSON format together with the JavaScript Leaflet to implement the interactive floorplan. For logging of gate events and analytics we used the Elastic Stack and for the implementation of the real-time functionality Socket.IO. 
 
-Our solution offers a performant real-time display by having a delay time between the gate event and the respective visualization in the frontend of an average 135ms (at 60 requests per minute).
-Our solution also provides a fast creation and retrieval of gate event log data. We achieved a constant retrieval response time of just 0.3 seconds for small (one thousand logs) and large (one million logs) of data. As a result display of the heatmap happens fast even for large data sets. Furthermore our floorplan achieves a respectable rendering performance at 100 gate markers on the map.
+Our solution offers a performant real-time display by having a delay time between the gate event and the respective update of the heatmap of an average 138ms (at 60 requests per minute).
+Our solution also provides a fast creation and retrieval of gate event log data. We achieved a constant retrieval response time of 0.33 seconds for small (one thousand) and large (one million) amount of data. As a result the display of the heatmap happens fast even for large data sets. Furthermore our floorplan achieves a respectable rendering performance at 100 gate markers on the map.
 
 \clearpage
 

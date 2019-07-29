@@ -63,7 +63,7 @@ The results of this can be seen in Table~\ref{table:benchmark:transmissiondelay}
 
 As we can see, our application updates the color of the room quite fast in the low frequency and medium frequency simulations with a delay time of just 166ms at low frequency and 138ms at medium frequency.
 Also the addition of the log message happens fast with a delay time of 219ms at low frequency and 190ms at medium frequency.
-But at high frequency we can clearly see a drop in performance . Although the updating of the room color still happens quite fast with an average delay time of 343ms, the addition of the log message happens here with a delay time of 14.5 seconds. 
+But at high frequency we can clearly see a drop in performance. Although the updating of the room color still happens quite fast with an average delay time of 343ms, the addition of the log message happens here with a delay time of 14.5 seconds. 
 
 This could be due to the fact that in the high frequency simulation the script from Listing~\ref{listing:realtimeEvaluationScript} is sending a request to our backend each 0.1 seconds (600 entries per minute), but the average completion time for the create event log POST request is 0.3 seconds. This means that our backend has to handle multiple POST requests at the same time, which could caused by the setup of our backend server. But also the high load of work that has to happen almost simultanously in the frontend could be the cause of the performance drop. 
 
@@ -81,7 +81,7 @@ The result of this measurement can be seen in Table~\ref{table:elasticResponseTi
 \centering
 \begin{tabular}{l|llll}
 \textbf{Amount of logs}                                                      & \textbf{1000} & \textbf{10000} & \textbf{100000} & \textbf{1000000} \\ \hline
-\begin{tabular}[c]{@{}l@{}}Average response time\\ (in seconds)\end{tabular} &               & 0.33           & 0.31            & 0.34             \\ 
+\begin{tabular}[c]{@{}l@{}}Average response time\\ (in seconds)\end{tabular} & 0.33               & 0.33           & 0.31            & 0.34             \\ 
 \end{tabular}
 	\caption{Elasticsearch server response times}
     \label{table:elasticResponseTimes}
