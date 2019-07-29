@@ -56,16 +56,16 @@ As we can see, our application updates the color of the room quite fast in the l
 Also, the addition of the log message happens fast with a delay time of 219ms at low frequency and 190ms at medium frequency.
 But at a high frequency, we can see a drop in performance. Although the updating of the room color still happens quite fast with an average delay time of 343ms, the addition of the log message happens here with a delay time of 14.5 seconds. 
 
-This could be because in the high-frequency simulation the script from Listing~\ref{listing:realtimeEvaluationScript} is sending a request to our backend every 0.1 seconds (600 entries per minute), but the average completion time for the create event log POST request is 0.3 seconds. This means that our backend has to handle multiple POST requests at the same time, which could be caused by the setup of our backend server. But also the high load of work that has to happen almost simultaneously in the frontend could be the cause of the performance drop. 
+This could be because in the high-frequency simulation the script from Listing~\ref{listing:realtimeEvaluationScript} is sending a request to our backend every 0.1 seconds (600 entries per minute), but the average completion time for the create event log POST request is 0.3 seconds. This means that our backend has to handle multiple POST requests at the same time, which could be critical if the setup of our backend server is not capable of handling this case properly. But also the high load of work that has to happen almost simultaneously in the frontend could be the cause of the performance drop. 
 
-But although there are performance issues at high frequency, the average building will likely not have that many entries per minute, which makes our floorplan performant in displaying data in real-time for the average use case. We can also conclude that the update process of the heatmap each time an event happens is fast and reliable. This also includes the fast display of alarm events on the map and in the Activity Monitor.
+But although there are performance issues at high frequency, the average building will likely not have that many entries per minute, which makes our floorplan performant in displaying data in real-time for the average use case. We can also conclude that the update process of the heatmap each time an event happens is fast and reliable. Moreover, we can conclude that the display of alarm events on the map and in the Activity Monitor is also fast and thereby helps the facility management to quickly react to security threats.
 
 \subsection{Logging Server Response Time}
 
 To measure how good the event logging in our system works, we will look at the response time from the search request we've seen in Listing~\ref{listing:elasticsearchRequest}
 at different amounts of logs in our log database. With this measurement, we can see how performant searching through gate logs is in small and large environments. 
 
-We measured the response time by executing a bash script which executes a cURL request 100 times and calculates the average response time. 
+We measured the response time by executing a bash script which executes a cURL\footnote{https://curl.haxx.se/} request 100 times and calculates the average response time. 
 The result of this measurement can be seen in Table~\ref{table:elasticResponseTimes}.
  
 \begin{table}[H]
@@ -82,7 +82,7 @@ We see that while the amount of logs is growing exponentially the average respon
 
 \subsection{Interactive Floorplan}
 
-Although there is no clear metric for evaluating interactivity we will look at the performance of the floorplan in click, drag and scroll events at different amounts of gate markers (10, 100 and 1000 markers in the same view frame) on the plan. We utilize the Google Chrome Performance tab for measuring the performances of different events. The tests are done on a MacbookPro with an Intel Iris Graphics 6100 graphics card and a 2,7 GHz Intel Core i5 processor on Google Chrome (Version 75.0.3770.142). The results can be seen in Table ~\ref{table:performanceWebApplication}.
+Since there is no clear metric for evaluating interactivity we will look at the performance of the floorplan in click, drag and scroll events at different amounts of gate markers (10, 100 and 1000 markers in the same view frame) on the plan. We utilize the Google Chrome Performance tab for measuring the performances of different events. The tests are done on a MacbookPro with an Intel Iris Graphics 6100 graphics card and a 2,7 GHz Intel Core i5 processor on Google Chrome (Version 75.0.3770.142). The results can be seen in Table ~\ref{table:performanceWebApplication}.
 
 \begin{table}[H]
 \centering
@@ -97,7 +97,7 @@ Although there is no clear metric for evaluating interactivity we will look at t
     \label{table:performanceWebApplication}
 \end{table}
 
-The performance of handling the click events stays constant in our tests no matter the number of gate markers on the map. But we can see that the rendering performance of the floorplan if the user drags or zooms is dependant on the number of gate markers. At an amount of 1000 gate markers in the view frame the frames per second at dragging or scrolling drop to 2 frames per second. This makes the interactive floorplan unresponsive and therefore uncomfortable to use at large amounts of gate markers. Better handling of the map rendering is necessary here.
+The performance of handling the click events stays constant in our tests no matter the number of gate markers on the map. But we can see that the rendering performance of the floorplan if the user drags or scrolls is dependant on the number of gate markers. At an amount of 1000 gate markers in the view frame the frames per second at dragging or scrolling drop to 2 frames per second. This makes the interactive floorplan unresponsive and therefore uncomfortable to use at large amounts of gate markers. Better handling of the map rendering is necessary here.
 
 \subsection{Data Privacy}
 \label{Data Privacy}

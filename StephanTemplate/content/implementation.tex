@@ -3,7 +3,7 @@ In this chapter, we will present how we implemented the features that were neces
 
 \subsection{Choosing technology as a basis}
 
-There are multiple libraries available that provide tool kits for creating interactive maps. In this section, we want to showcase these different libraries and explain on what library interactive floorplan will be built upon. Furthermore, we want to clarify what format of geospatial data will be used in this floorplan.
+There are multiple libraries available that provide tool kits for creating interactive maps. In this section, we want to showcase these different libraries and explain on what library our interactive floorplan will be built up on. Furthermore, we want to clarify what format of geospatial data will be used in this floorplan.
 
 \subsubsection{Google Maps}
 \label{Google Maps}
@@ -24,7 +24,7 @@ The Maps JavaScript API comes with direct support for importing GeoJSON and can 
 \subsubsection{OpenLayers}
 \label{OpenLayers}
 
-OpenLayers is an open-source JavaScript library for displaying interactive maps. Out of the box it comes with various features like map rotation, direct mobile support and import of GeoJSON, TopoJSON, KML\footnote{Keyhole Markup Language} or GML\footnote{Geography Markup Language} data \footnote{\url{https://openlayers.org/}}. Unlike Google Maps, OpenLayers is a pure client-side library with no server-side dependencies. 
+OpenLayers is an open-source JavaScript library for displaying interactive maps. Out of the box it comes with various features like map rotation, direct mobile support and import of GeoJSON, TopoJSON, KML\footnote{Keyhole Markup Language} or GML\footnote{Geography Markup Language} data\footnote{\url{https://openlayers.org/}}. Unlike Google Maps, OpenLayers is a pure client-side library with no server-side dependencies. 
 
 \subsubsection{Leaflet}
 \label{Leaflet}
@@ -33,13 +33,13 @@ Leaflet is another open-source JavaScript library for creating interactive maps.
 
 By only including core features for map visualization, it only has a bundled size of 138.6KB\footnote{\url{https://bundlephobia.com/result?p=leaflet@1.5.1}}, making it a very lightweight library.
 
-Furthermore, Leaflet supports every browser and can easily be extended by plugins from the community or own plugins.
-This also includes plugins for creating indoor maps \cite{baines_provides_2019} and real-time maps with Socket.IO.
+Furthermore, Leaflet supports every browser and can easily be extended by own plugins or community plugins.
+The community has already plugins for creating indoor maps \cite{baines_provides_2019} and real-time maps with Socket.IO.
 
 \subsubsection{GeoJSON}
 \label{GeoJSON}
 
-GeoJSON is a format for interchanging geospatial data and is based on JavaScript Object Notation. With the publishing of RFC 7946 in August 2016 it has a standardized format specification.
+GeoJSON is a format for interchanging geospatial data and is based on JavaScript Object Notation. Since the publishing of RFC 7946 in August 2016 it has a standardized format specification.
 Different geometries can be represented in a GeoJSON file. These include for example Lines, Linestrings, Polygones or Multipolygones\footnote{\url{https://tools.ietf.org/html/rfc7946}}. 
 
 This can be used to encode the geometry for countries, houses and streets on a map, but also for encoding data for indoor rooms, stairs, and hallways.
@@ -97,7 +97,7 @@ To create this connection between the room and the marker, each room represented
 
 After setting the marker it needs to be linked with a gate, which is done by a selection input presenting all available gates. After successfully linking it to a gate the marker gets persisted in our database.
 
-The map is capable of also handling pan events for moving to another location and scroll events for zooming in and out. This functionality is part of the |Map| class from Leaflet.
+The map is capable of also handling scroll events for moving to another location and scroll events for zooming in and out. This functionality is part of the |Map| class from Leaflet.
 
 \subsection{Logging of Gate Events}
 \label{Logging of Gate Events}
@@ -300,7 +300,7 @@ listenForGateEvents = () => {
 
 \subsubsection{Heatmap}
 
-Every time an event occurs the marker that is linked with the gate Id of the event object is searched. Then the room id that is connected with this marker is re-colorized based on the updated number of people that are behind this gate (Listing~\ref{listing:gateEventHappened}).
+Every time an event occurs the marker that is linked with the gate Id of the event object is searched. Then the room that is connected with this marker is re-colorized based on the updated number of people that are behind this gate (Listing~\ref{listing:gateEventHappened}).
 
 \clearpage
 
@@ -321,7 +321,7 @@ gateEventHappened = (event) => {
     };
 \end{lstlisting}
 
-To calculate the number of people we use an endpoint in our backend that looks at the DateTime of the office opening at the day the request to the endpoint is made. At this time we expect that no people are inside the office. It then counts all entries and exits at the gate with the given id that was successful and after the office opening. By subtracting the exits from the entries we get the number of people that are behind this gate.
+To calculate the number of people we use an endpoint in our backend that looks at the date and time of the office opening at the day the request to the endpoint is made. At this time we expect that no people are inside the office. It then counts all entries and exits at the gate with the given id that was successful and after the office opening. By subtracting the exits from the entries we get the number of people that are behind this gate.
 
 This result is then the input for colorizing the room (Listing~\ref{listing:colorizeRoom}):
 
@@ -363,7 +363,7 @@ More information about the access decisions gets also displayed in real-time in 
     \label{fig:FloorplanScreenshot}
 \end{figure}
 
-Because the gates transmit the deviceId in the event object, the relationship to the owner of the device can be made through our backend. This happens each time a gate event occurs and we add the information as a new row into the Activity Monitor (Listing~\ref{listing:addMessage}):
+Because the gates transmit the device id in the event object, the relationship to the owner of the device can be made through our backend. This happens each time a gate event occurs and we add the information as a new row into the Activity Monitor (Listing~\ref{listing:addMessage}):
 
 \begin{lstlisting}[label={listing:addMessage},caption={Function for adding message to Activity Monitor}]
 addMessage = (logMessage) => {
@@ -385,7 +385,7 @@ addMessage = (logMessage) => {
     };
 \end{lstlisting}
 
-For each event, we display information about the time, the person that is connected with the event, the access type, the success of the access and the gate Id where the event happened.
+For each event, we display information about the time, the person that is connected with the event, the access type, the success of the access and the gate id where the event happened.
 
 \subsubsection{Alarm}
 
