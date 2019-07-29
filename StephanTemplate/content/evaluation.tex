@@ -13,20 +13,15 @@ DEVICE_ID_WHICH_ACCESSED="c8ce80bc-c238-44bf-bc8b-fe68a3dbb957"
 SLEEP_TIME=0.1
 
 createGateEventLog() {
-    // we will only use ENTRY type for this simulation
-    eventType="ENTRY"
-
     // picks a random gate id 
     GATE_ID=$RANDOM
     let "GATE_ID %= $GATE_COUNT"
-
     //fires event to development server
     curl --insecure -v -X POST https://dev.baam.nexenio.com/api/logs 
-            -H "Content-Type: application/json" 
+        -H "Content-Type: application/json" 
         -H "Authorization: Basic zdWIiOiIxMjM0NTY3ODkwIiwi" 
-        -d '{"gateId":"'"$GATE_ID"'", "wasSuccessful": "true", "accessType": "'"$eventType"'", "loglevel": "DEBUG", "deviceId":"'"$DEVICE_ID_WHICH_ACCESSED"'"}'
+        -d '{"gateId":"'"$GATE_ID"'", "wasSuccessful": "true", "accessType": "ENTRY", "loglevel": "DEBUG", "deviceId":"'"$DEVICE_ID_WHICH_ACCESSED"'"}'
 }
-
 // make 100 calls to our backend
 for ((i=0;i<100;i++));
 do
@@ -35,7 +30,6 @@ do
     // the usage of the ampersand makes this call asynchronous
     createGateEventLog &
 done
-
 \end{lstlisting}
 
 The script will result in multiple notifications from the backend about gate events. In the frontend, we will then look at the delay time between the emission of these notifications and the completion of certain methods. This measurement delivers a good metric for evaluating the real-time data visualization of our application because we can determine the time gap between the actual gate event and the associated display in our floorplan.

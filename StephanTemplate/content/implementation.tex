@@ -153,7 +153,10 @@ We then create a \emph{gates} index (Listing~\ref{listing:elasticsearchGatesInde
 curl -v -X PUT 'localhost:9200/gates'
 \end{lstlisting}
 
-This server then offers an REST API endpoint for creating gate event logs (Listing~\ref{listing:searchElasticPOST}):
+This server then offers an REST API endpoint for creating gate event logs (Listing~\ref{listing:searchElasticPOST}).
+
+ \clearpage
+ 
 \begin{lstlisting}[label={listing:searchElasticPOST},caption={Interface of Elasticsearch server to create gate event logs}]
 function postGateEvent(eventData) {
     return fetch(`http://${elasticsearchBasePath}/gates/_doc`, {
@@ -171,6 +174,8 @@ This endpoint is exposed to the outside so gates can communicate to our system. 
  The endpoint requires a transfer of the ID of the device that tried to access, the access type (entry or exit), the gate ID and if the entry or exit was successful. Moreover, the optional parameters |loglevel| and |message| can be sent. The |loglevel| can be used to signalize an alarm event and the |message| parameter can be used to send over more detailed information.
 
 The Elasticsearch server also offers an interface to search for logs satisfying specific conditions. This is how we can look up all the events at a gate that are of a specific access type (Listing~\ref{listing:elasticsearchRequest}):
+
+\clearpage
 
 \begin{lstlisting}[label={listing:elasticsearchRequest},caption={Example search request to Elasticsearch server}]
 function fetchAllEventsAtGateWithAccessType(gateId, accessType) {
@@ -295,7 +300,9 @@ listenForGateEvents = () => {
 
 \subsubsection{Heatmap}
 
-Every time an event occurs the marker that is linked with the gate Id of the event object is searched. Then the room id that is connected with this marker is re-colorized based on the updated number of people that are behind this gate (Listing~\ref{listing:gateEventHappened}):
+Every time an event occurs the marker that is linked with the gate Id of the event object is searched. Then the room id that is connected with this marker is re-colorized based on the updated number of people that are behind this gate (Listing~\ref{listing:gateEventHappened}).
+
+\clearpage
 
 \begin{lstlisting}[label={listing:gateEventHappened},caption={Handling gate events in frontend}]
 gateEventHappened = (event) => {
@@ -335,14 +342,14 @@ Because we can only work with events from the gates and no indoor positioning te
 We follow the common convention in heatmaps of representing the occupancy of a room by using colors on a scale from green to red, with green representing a room with no people inside and with red a room that hit its maximum capacity. The calculation for the color can be seen in Listing~\ref{listing:getColorForOccupancyRate}.
 
 \begin{lstlisting}[label={listing:getColorForOccupancyRate},caption={Function for calculating color based on occupancy}]
-    getColorForOccupancyRate = (rate) => {
-        /*
-            input: value from 0 to 1
-            returns: a hsl color on a scale from green to red
-        */
-        const hue = ((1 - rate) * 120).toString(10);
-        return ['hsl(', hue, ',100%,50%)'].join('');
-    };
+getColorForOccupancyRate = (rate) => {
+    /*
+        input: value from 0 to 1
+        returns: a hsl color on a scale from green to red
+    */
+    const hue = ((1 - rate) * 120).toString(10);
+    return ['hsl(', hue, ',100%,50%)'].join('');
+};
 \end{lstlisting}
 
 \subsubsection{Access Decision Information}
