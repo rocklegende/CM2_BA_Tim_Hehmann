@@ -1,9 +1,9 @@
 \section{Implementation}
-As this was part of our access management platform we implemented this floorplan also as a web application.
+In this chapter we will present how we implemented the features that were necessary for fulfilling each requirement described in the Concept chapter. This will be guided by code of our current implementation.
 
+\subsection{Choosing technology as a basis}
 
-
-\subsection{Technology Discussion}
+There are multiple libraries available that provide tool kits for creating interactive maps. In this section we want to showcase these different libraries and explain on what library interactive floorplan will be build upon. Furthermore we want to calrify what format of geospatial data will be used in this floorplan.
 
 \subsubsection{Google Maps}
 \label{Google Maps}
@@ -80,12 +80,6 @@ This indoor layer is then added on top of an instance of the  Leaflet |Map|\cite
 \begin{lstlisting}[label={listing:addIndoorLayerToMap},caption={Adding indoor layer to map}]
 indoorLayer.addTo(this.map);
 \end{lstlisting}
-
-%TODO
-%\begin{itemize}
-%\item Warum wird lat lng benoetigt?
-%\item Wie wird center rausgefunden vlt noch spannend
-%\end{itemize}
 
 
 \subsection{Interactive Floorplan}

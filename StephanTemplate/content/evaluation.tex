@@ -67,7 +67,7 @@ But at high frequency we can clearly see a drop in performance . Although the up
 
 This could be due to the fact that in the high frequency simulation the script from Listing~\ref{listing:realtimeEvaluationScript} is sending a request to our backend each 0.1 seconds (600 entries per minute), but the average completion time for the create event log POST request is 0.3 seconds. This means that our backend has to handle multiple POST requests at the same time, which could caused by the setup of our backend server. But also the high load of work that has to happen almost simultanously in the frontend could be the cause of the performance drop. 
 
-But although there are performance issues at high frequency, the average building will likely not have that many entries per minute, which makes our floorplan performant in displaying data in real-time for the average use case.
+But although there are performance issues at high frequency, the average building will likely not have that many entries per minute, which makes our floorplan performant in displaying data in real-time for the average use case. We can also conclude that the update process of the heatmap each time an event happens is fast and reliable. This also includes the fast display of alarm events on the map and in the Activity Monitor.
 
 \subsection{Logging Server Response Time}
 
@@ -106,17 +106,13 @@ Although there is no clear metric for evaluating interactivity we will look at t
     \label{table:performanceWebApplication}
 \end{table}
 
-The performance of handling the click events stays constant in our tests no matter the amount of gate markers on the map. But we can see that the rendering performance of the floorplan if the user drags or zooms is dependant on the number of gate markers. At an amount of 1000 gate markers in the viewframe the frames per seconds at dragging or scrolling drop to 2 frames per second. This makes the interactive floorplan very unresponsive and therefore uncomfortable at large amounts of gate markers. A better handling of rendering large amounts of html elements would be necessary.
+The performance of handling the click events stays constant in our tests no matter the amount of gate markers on the map. But we can see that the rendering performance of the floorplan if the user drags or zooms is dependant on the number of gate markers. At an amount of 1000 gate markers in the viewframe the frames per seconds at dragging or scrolling drop to 2 frames per second. This makes the interactive floorplan unresponsive and therefore uncomfortable to use at large amounts of gate markers. A better handling of the map rendering is necessary here.
 
 \subsection{Data Privacy}
 \label{Data Privacy}
 
-dadurch dass nur admins dies sehen duerfen alles ok.
+Our implementation protects data privacy by using a local logging server, which is storing and analyzing gate event data in an internal database. The data is thereby not shared with any third parties. Furthermore our API endpoint for retrieving gate event data is guarded by Keycloak\footnote{https://www.keycloak.org/}, an open-source access management solution. This protects the gate event data from unauthorized access. Also the Socket.IO server is only sending data to users that are authenticated by verifying that the Socket.IO client is requesting data with a valid Keycloak access token. Additionally we only share this data with trustworthy admin personell and no other users by using seperated communication channels for users and admins.
 
-Application ist Abgesichert durch Passwort
-
-Nur admins kriegen notifications mit den daten, niemals irgendwelche user
---> wird versichert durch richtige access token verifizierung
-
+Moreover the data that is visible in the frontend about the user that enters or exits a gate is coming from user data that is stored in our own system. The gates are only sending us the id of the device, which is then mapped to the stored user data. Therefore we don't reveil any further information of the device or any sensitive data about the owner that could be stored on that device.
 
 \clearpage
