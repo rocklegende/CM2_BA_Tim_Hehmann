@@ -31,6 +31,7 @@
 \usepackage[pdftex, colorlinks, linktocpage, linkcolor=black, citecolor=black, urlcolor=black]{hyperref}
 \usepackage[linesnumbered]{algorithm2e}
 
+
 \pagestyle{scrheadings}
 
 \geometry{a4paper, top=55mm, left=40mm, right=35mm, bottom=40mm, headsep=10mm, footskip=22mm}
@@ -107,7 +108,7 @@
 		pdfcreator	= {PDFLaTeX},
 		pdfproducer	= {LaTeX with hyperref and thumbpdf}
 	}
-	
+	\pagenumbering{roman}
 	\input{titlepage_english}
 	
 	%%% Disclaimer
@@ -130,6 +131,7 @@
 	
 	\clearpage
 
+	\pagenumbering{arabic}
 	\mainmatter
 	%% Content
 	\input{content/introduction.tex}
