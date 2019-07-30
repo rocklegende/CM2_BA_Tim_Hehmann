@@ -97,7 +97,7 @@ To create this connection between the room and the marker, each room represented
 
 After setting the marker it needs to be linked with a gate, which is done by a selection input presenting all available gates. After successfully linking it to a gate the marker gets persisted in our database.
 
-The map is capable of also handling scroll events for moving to another location and scroll events for zooming in and out. This functionality is part of the |Map| class from Leaflet.
+The map is capable of also handling drag events for moving to another location and scroll events for zooming in and out. This functionality is part of the |Map| class from Leaflet.
 
 \subsection{Logging of Gate Events}
 \label{Logging of Gate Events}
@@ -107,7 +107,7 @@ The Elastic Stack consists of mainly three open-source projects: \emph{Elasticse
 Together they form a pipeline that can be used to analyze, search and visualize logs created from different sources. 
 
 The component of the first stage of this pipeline is Logstash, which is responsible for collecting data from different locations and transforming it for the next step. Elasticsearch then indexes these logs and provides a RESTful API for searching. Kibana uses this API from Elasticsearch to provide meaningful visualization of the logs.
-Through a smart indexing technology, the Elastic Stack promises a fast response time even for large data sets and is used by companies like Netflix for monitoring security-related logs or Medium for debugging production issues \footnote{\url{https://hackernoon.com/elastic-stack-a-brief-introduction-794bc7ff7d4f}}.
+Through a smart indexing technology, the Elastic Stack promises a fast response time even for large data sets and is used by companies like Netflix for monitoring security-related logs or Medium for debugging production issues\footnote{\url{https://hackernoon.com/elastic-stack-a-brief-introduction-794bc7ff7d4f}}.
 
 %In our project logs sent from the gates need to be analyzed and visualized to give the facility management team more insights about the access decisions made. These information get also displayed in the floorplan and the heatmap gets calculated based on the gate event logs. 
 To ensure a fast display of the access decision data and to also ensure the possibility in the future to search and visualize logs not only from the gates, but from other sources also, we decided to utilize the Elastic Stack.
@@ -145,8 +145,6 @@ curl -v -X PUT 'localhost:9200/_template/gates' -H 'Content-Type: application/js
 }'
 \end{lstlisting}
 
-%TODO Was ist unterschied zwischen integer und keyword, warum ist die suche dadurch besser?
-
 We then create a \emph{gates} index (Listing~\ref{listing:elasticsearchGatesIndex}). All logs for the gates will be stored under that index.
 
 \begin{lstlisting}[label={listing:elasticsearchGatesIndex},caption={cURL script for creating gates index}]
@@ -171,7 +169,7 @@ function postGateEvent(eventData) {
 \end{lstlisting}
 
 This endpoint is exposed to the outside so gates can communicate to our system. To protect this route from being exploited from other sources than the gates we use a preshared token that needs to be set in the \emph{Authorization} header.
- The endpoint requires a transfer of the ID of the device that tried to access, the access type (entry or exit), the gate ID and if the entry or exit was successful. Moreover, the optional parameters |loglevel| and |message| can be sent. The |loglevel| can be used to signalize an alarm event and the |message| parameter can be used to send over more detailed information.
+ The endpoint requires a transfer of the id of the device that tried to access, the access type (entry or exit), the gate id and if the entry or exit was successful. Moreover, the optional parameters |loglevel| and |message| can be sent. The |loglevel| can be used to signalize an alarm event and the |message| parameter can be used to send over more detailed information.
 
 The Elasticsearch server also offers an interface to search for logs satisfying specific conditions. This is how we can look up all the events at a gate that are of a specific access type (Listing~\ref{listing:elasticsearchRequest}):
 
@@ -185,7 +183,9 @@ function fetchAllEventsAtGateWithAccessType(gateId, accessType) {
     const url = `http://${elasticsearchBasePath}/gates/_search?sort=timestamp:desc&`
         +  `q=gateId:${gateId}`
         +  `%20AND%20`
-        +  `accessType=${accessType}`
+        +  `accessType:${accessType}`
+        +  `%20AND%20`
+        +  `wasSuccessful:true`
         +  `%20AND%20`
         +  `timestamp:[${officeOpening}+TO+${now}}`;
         
@@ -239,7 +239,7 @@ io.use((socket, next) => {
 });
 \end{lstlisting}
 
-Every time a frontend client now connects to the server, the server extracts the userId from the token that was sent by the client. We then create a \emph{Room}\cite{socketio:rooms} - a separate communication channel - with this userId, so that we can emit notifications only to that specific user. If the logged-in user is also an admin, he gets added to an admin room, a room where all other admins that are connected are also inside. The implementation of this can be seen in Listing~\ref{listing:onConnection}.
+Every time a frontend client now connects to the server, the server extracts the user id from the token that was sent by the client. We then create a \emph{Room}\cite{socketio:rooms} - a separate communication channel - with this user id, so that we can emit notifications only to that specific user. If the logged-in user is also an admin, he gets added to an admin room, a room where all other admins that are connected are also inside. The implementation of this can be seen in Listing~\ref{listing:onConnection}.
 
 \begin{lstlisting}[label={listing:onConnection},caption={Handling client connections to Socket.IO server}]
 io.on('connection', (socket) => {
@@ -300,7 +300,7 @@ listenForGateEvents = () => {
 
 \subsubsection{Heatmap}
 
-Every time an event occurs the marker that is linked with the gate Id of the event object is searched. Then the room that is connected with this marker is re-colorized based on the updated number of people that are behind this gate (Listing~\ref{listing:gateEventHappened}).
+Every time an event occurs the marker that is linked with the gate id of the event object is searched. Then the room that is connected with this marker is re-colorized based on the updated number of people that are behind this gate (Listing~\ref{listing:gateEventHappened}).
 
 \clearpage
 
@@ -374,7 +374,7 @@ addMessage = (logMessage) => {
             logMessages.shift();
         }
 
-            // get user information with the device ID provided in the event object
+        // get user information with the device ID provided in the event object
         getDeviceById(logMessage.deviceId)
             .then(device => getUserById(device.userId))
             .then(user => {
